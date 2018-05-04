@@ -12,5 +12,6 @@ drn_mml.h uses Sean Barrett's stretchy_buffer library
 (https://github.com/nothings/stb)
 
 For more info on Music Macro Language:
+
 https://shauninman.com/assets/downloads/ppmck_guide.html
 http://benjaminsoule.fr/tools/vmml/
