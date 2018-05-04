@@ -1,3 +1,24 @@
+/*
+ * drn_mml.h
+ * 
+ * A basic parser/decoder for MML (Music Macro Language) format music files
+ * -    currently works on basic samples but not full featured or thoroughly
+ *      tested
+ * -    for more info on MML see:
+ *      https://shauninman.com/assets/downloads/ppmck_guide.html
+ *      http://benjaminsoule.fr/tools/vmml/
+ * -    uses standard math.h and includes Sean Barrett's stretchy_buffer
+ *      library (https://github.com/nothings/stb)
+* 
+// Version History
+// 0.4  (2018-05-04)    Initial release
+//
+//
+// LICENSE
+//
+//   See end of file
+*/
+
 #ifndef __INCLUDED__DRN_MML_H__
 #define __INCLUDED__DRN_MML_H__
 
@@ -755,6 +776,26 @@ drn_mml_t* drn_mml_open_mem(const char* buf)
 
 #pragma GCC diagnostic pop
 
-
-
 #endif /* DRN_MML_IMPLEMENTATION */
+
+/*
+------------------------------------------------------------------------------
+ Public Domain (www.unlicense.org)
+This is free and unencumbered software released into the public domain.
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute this 
+software, either in source code form or as a compiled binary, for any purpose, 
+commercial or non-commercial, and by any means.
+In jurisdictions that recognize copyright laws, the author or authors of this 
+software dedicate any and all copyright interest in the software to the public 
+domain. We make this dedication for the benefit of the public at large and to 
+the detriment of our heirs and successors. We intend this dedication to be an 
+overt act of relinquishment in perpetuity of all present and future rights to 
+this software under copyright law.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN 
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+------------------------------------------------------------------------------
+*/
