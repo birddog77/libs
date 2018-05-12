@@ -44,8 +44,8 @@ typedef struct {
     unsigned int beats_per_minute;
     double length;
     double volume;
-    mml_note_t ** tracks;
     unsigned int track_count;
+    mml_note_t ** tracks;
 } mml_data_t;
 
 typedef struct {
@@ -55,8 +55,8 @@ typedef struct {
 } mml_read_state_t;
 
 typedef struct {
-    mml_data_t data;
     mml_decode_state_t decode_state;
+    mml_data_t data;
 } drn_mml_t;
 
 /* function prototypes */
@@ -281,11 +281,11 @@ static double mml_quant_values[9] =
 
 #define NULLCHAR '\0'
 #define DRN_PI 3.14159265359
-#define DRN_PI_twice DN_PI*2.0
+#define DRN_PI_twice DRN_PI*2.0
 #define DRN_PI_inv 0.31831
 #define DRN_SQUARE(x) (sin(x) > 0 ? 1.0 : -1.0)
 #define DRN_ONE_NOTE(t,note) ( \
-    0.99999*DRN_SQUARE(note*DN_PI_twice*t) \
+    0.99999*DRN_SQUARE(note*DRN_PI_twice*t) \
         )
 
 static const char* mml_buf = NULL;
@@ -446,7 +446,7 @@ NOTE mml__fetch_note(int note,int mod)
     return NOTE_none;
 }
 
-void mml__parse_sequence_s(dn_mml_t* song,mml_read_state_t* state)
+void mml__parse_sequence_s(drn_mml_t* song,mml_read_state_t* state)
 {
     mml_note_t * track = NULL; /* note storage for this seq */
     
@@ -557,7 +557,7 @@ const char* mml__read_file(const char* fn)
     return (const char*)string;
 }
 
-void drn_mml_reset_decode_state(dn_mml_t* m)
+void drn_mml_reset_decode_state(drn_mml_t* m)
 {
     int i;
     for( i=0; i<m->data.track_count; i++ )
@@ -571,7 +571,7 @@ void drn_mml_reset_decode_state(dn_mml_t* m)
     m->decode_state.accum_time = 0.0;
 }
 
-double drn_mml_decode_stream(dn_mml_t* m,double dt)
+double drn_mml_decode_stream(drn_mml_t* m,double dt)
 {
     int i,j;
     double r,v;
@@ -612,9 +612,8 @@ double drn_mml_decode_stream(dn_mml_t* m,double dt)
             r += (v*DRN_ONE_NOTE(m->decode_state.accum_time,n->frequency));
         }
     }
-    
+        
     return r;
-    
 }
 
 
@@ -639,7 +638,7 @@ drn_mml_t* drn_mml_open_file(const char* filename)
         free((void*)mml_buf);
     mml_buf = mml__read_file(filename);
     
-    drn_mml_t* song = mml_open_mem(mml_buf);
+    drn_mml_t* song = drn_mml_open_mem(mml_buf);
     
     return song;
 }
@@ -652,14 +651,16 @@ drn_mml_t* drn_mml_open_mem(const char* buf)
     mml_buf = buf;
     mml_index = 0;
     
-    dn_mml_t* song = (dn_mml_t*)malloc(sizeof(dn_mml_t));
+    drn_mml_t* song = (drn_mml_t*)malloc(sizeof(drn_mml_t));
     song->data.beats_per_minute = 140;
+    song->data.length = 0.0;
     song->data.tracks = NULL;
     mml_length_counter = 0;
     sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
     song->data.track_count = sb_count(song->data.tracks);
     song->data.tracks[0] = NULL;
     song->decode_state.track_pos = NULL;
+    song->decode_state.accum_time = 0.0;
     song->data.volume = 1.0;
     
     mml_read_state_t rs;
