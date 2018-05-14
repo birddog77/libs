@@ -90,8 +90,9 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt);
 
 #include <string.h>
 #include <assert.h>
-#include <math.h>
+//~ #include <math.h>
 #include <stdint.h>
+#include <stdio.h>
 
 /* include stretchy buffer stuff */
 #ifndef STB_STRETCHY_BUFFER_H_INCLUDED
@@ -280,12 +281,19 @@ static double mml_quant_values[9] =
     { 0.15, 0.25, 0.3, 0.45, 0.6, 0.75, 0.8, 0.9, 1.0 };
 
 #define NULLCHAR '\0'
+#define DRN_MODF(f) ((f)-(int)(f))
 #define DRN_PI 3.14159265359
 #define DRN_PI_twice DRN_PI*2.0
 #define DRN_PI_inv 0.31831
-#define DRN_SQUARE(x) (sin(x) > 0 ? 1.0 : -1.0)
+#define DRN_SIN(x) ( (x) - \
+                    (x*x*x)/6.0 + \
+                    (x*x*x*x*x)/(2.0*3*4*5) - \
+                    (x*x*x*x*x*x*x)/(2.0*3*4*5*6*7) + \
+                    (x*x*x*x*x*x*x*x*x)/(2.0*3*4*5*6*7*8*9) - \
+                    (x*x*x*x*x*x*x*x*x*x*x)/(2.0*3*4*5*6*7*8*9*10*11) )
+#define DRN_SQUARE(x) (DRN_SIN(DRN_PI_twice*DRN_MODF(((1.0/DRN_PI_twice)*x))) > 0 ? 1.0 : -1.0)
 #define DRN_ONE_NOTE(t,note) ( \
-    0.99999*DRN_SQUARE(note*DRN_PI_twice*t) \
+    0.99999*DRN_SQUARE(note*DRN_PI*t) \
         )
 
 static const char* mml_buf = NULL;
@@ -367,6 +375,21 @@ int mml__clamp(int i, int min, int max)
     return r;
 }
 
+double mml__modf(double n)
+{
+    return (n - (int)n);
+}
+
+double mml__sin(double x)
+{
+    return ( (x) -
+            (x*x*x)/6.0 +
+            (x*x*x*x*x)/(2.0*3*4*5) -
+            (x*x*x*x*x*x*x)/(2.0*3*4*5*6*7) +
+            (x*x*x*x*x*x*x*x*x)/(2.0*3*4*5*6*7*8*9) -
+            (x*x*x*x*x*x*x*x*x*x*x)/(2.0*3*4*5*6*7*8*9*10*11) );
+}
+
 
 int mml__get_note_modifier_s() {
     int result = NONE;
@@ -385,6 +408,24 @@ int mml__get_note_modifier_s() {
     return result;
 }
 
+int mml__ipow(int b,int p)
+{
+    int n = 1;
+    int r = b;
+    if( p == 0 )
+        return 1;
+    else
+    {
+        assert( p>0 );
+        while( n<p )
+        {
+            r *= b;
+            ++n;
+        }
+    }
+    return r;
+}
+
 int mml__get_num_modifier_s()
 {
     mml__skipwhite_s();
@@ -401,7 +442,7 @@ int mml__get_num_modifier_s()
         sum = 0;
         for( i=0; i<count; i++ )
         {
-            sum += (nums[count-i-1] * (int)pow(10,i));
+            sum += (nums[count-i-1] * (int)mml__ipow(10,i));
         }
     }
     
