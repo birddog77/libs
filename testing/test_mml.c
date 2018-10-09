@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
     float rad = 3.2f; 
 
     int num_samps;
-    POIS_POINT * data = drn_poisson_plane(&num_samps,sz,rad);
+    POIS_POINT * data = drn_poisson_disk(&num_samps,sz/2,rad);
 
     printf("num samps: %d\n",num_samps);
 
@@ -45,8 +45,8 @@ int main(int argc, char **argv) {
     for( int i=0; i<num_samps; i++ )
     {
         p = data[i];
-        xind = floor(p.x);
-        yind = floor(p.y);
+        xind = floor(p.x+sz/2);
+        yind = floor(p.y+sz/2);
         char_data[yind*sz+xind] = '@';
     }
 
