@@ -147,12 +147,11 @@ int drn__check_bg_grid( POIS_POINT p,
     
     POIS_POINT p1;
     
-            if(tmp == 4) printf("\n");
     for( int y=starty; y<=endy; ++y ) {
         for( int x=startx; x<=endx; ++x )
         {
             ind = drn__clamp(y*grid_size+x,0,grid_size*grid_size-1);
-            if(tmp == 4) printf("%i ",ind);
+
             if( bg_grid[ind] >= 0 )
             {
                 p1 = points[bg_grid[ind]];
@@ -162,12 +161,9 @@ int drn__check_bg_grid( POIS_POINT p,
                     res = 0;
                 }
             }
-        }
-        
-            if(tmp == 4) printf("\n");
+        }    
     }
     
-            if(tmp == 4) printf("\n");
     return res;
 }
 
@@ -185,9 +181,6 @@ POIS_POINT * drn_poisson_plane( int * num_samples,
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT p,pk;
     
-    printf("unit_sz: %f\n",unit_sz);
-    printf("grid_dim: %d\n",grid_dim);
-
     // allocate background grid and active list for point comparisons
     int * bg_grid = malloc(sizeof(int)*grid_dim*grid_dim);
     unsigned int * active_list = malloc(sizeof(unsigned int)*grid_dim*grid_dim);    
@@ -198,18 +191,13 @@ POIS_POINT * drn_poisson_plane( int * num_samples,
     // initialize background grid with -1
     for( int i=0; i<grid_dim*grid_dim; ++i )
         bg_grid[i] = -1;
-    
-    for( int i=0; i<grid_dim*grid_dim; ++i )
-        printf("%d ",bg_grid[i]);
-    printf("\n");
-    
-    
+        
     // emit initial point
     p = drn_generate_uniform_point(space_size);
     point_list[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(floor(p.y/unit_sz)*grid_dim+floor(p.x/unit_sz));
-    printf("this: %d\n",tmp);
+    
     bg_grid[tmp] = num_points-1;
     
     // generate points
@@ -230,12 +218,7 @@ POIS_POINT * drn_poisson_plane( int * num_samples,
                 point_list[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
                 tmp = (int)(floor(pk.y/unit_sz)*grid_dim+floor(pk.x/unit_sz));
-                
-                if( bg_grid[tmp] > -1 )
-                    printf("why: %i %i %f %f %i\n",tmp,bg_grid[tmp],pk.x,pk.y,grid_dim);
-                else
-                    printf("hit: %d %d\n",tmp,bg_grid[tmp]);
-                
+                                
                 bg_grid[tmp] = num_points-1;
                 break;
             }
