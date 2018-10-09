@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     POIS_POINT p;
 
     int sz = 32;
-    float rad = 8.f; 
+    float rad = 10.2f; 
 
     int num_samps;
     POIS_POINT * data = drn_poisson_plane(&num_samps,sz,rad);
@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
         p = data[i];
         xind = floor(p.x);
         yind = floor(p.y);
-        char_data[yind*sz+xind] = 97+i;
+        char_data[yind*sz+xind] = '@';
     }
 
     for(int i=0; i<sz; i++ )

@@ -1,10 +1,11 @@
 # drn_libs
 single-file public domain libraries in c/c++
 
-Library                                     | Description
-------------------------------------------- | -----------
-[drn_misc] (drn_misc.h)                     | some misc math and file functions
-[drn_mml] (drn_mml.h)                       | MML (Music Macro Language) parser and decoder
+Library                               | Description
+--------------------------------------| -----------
+[drn_misc]  (drn_misc.h)              | some misc math and file functions
+[drn_mml]   (drn_mml.h)               | MML (Music Macro Language) parser and decoder
+[drn_pois]  (drn_pois.h)              | generates Poisson-ish random data
 
 
 # Notes
