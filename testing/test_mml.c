@@ -12,33 +12,29 @@ void print_point(POIS_POINT* p)
 }
 
 
-int main() {
+int main(int argc, char **argv) {
+    
+    int sdnum = time(0);
 
-    srand(time(0));
+    if( argc > 1 )
+        sdnum = atoi(argv[1]);
+
+    srand(sdnum);
     
     POIS_POINT p;
 
-    int sz = 16;
-    float rad = 4.f;
+    int sz = 32;
+    float rad = 8.f; 
 
     int num_samps;
     POIS_POINT * data = drn_poisson_plane(&num_samps,sz,rad);
 
-    printf("%d\n",num_samps);
-/*
+    printf("num samps: %d\n",num_samps);
+
     for( int i=0; i<num_samps; i++ )
     {
+        printf("%c ",97+i);
         print_point(&data[i]);
-        for( int j=0; j<num_samps; j++ )
-        {
-            if( !(i==j) )
-            {
-                printf("\t");
-                print_point(&data[j]);
-                printf("\t\t");
-                printf("%f\n",drn__get_dist(&data[i],&data[j]));
-            }
-        }
     }
 
     int xind,yind;
@@ -51,7 +47,7 @@ int main() {
         p = data[i];
         xind = floor(p.x);
         yind = floor(p.y);
-        char_data[xind*sz+yind] = '@';
+        char_data[yind*sz+xind] = 97+i;
     }
 
     for(int i=0; i<sz; i++ )
@@ -60,7 +56,7 @@ int main() {
             printf("%c ",char_data[i*sz+j]);
         printf("\n");
     }
-*/
+
 
 
 

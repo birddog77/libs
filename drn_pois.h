@@ -96,12 +96,14 @@ POIS_POINT drn__generate_radial_point(POIS_POINT p,float r)
 int drn__clamp(int x,int min,int max) 
 {
     int res;
+    
     if( x < min )
         res = min;
     else if( x > max )
         res = max;
     else
         res = x;
+
     return res;
 }
 
@@ -116,9 +118,10 @@ int drn__check_bounds_plane(POIS_POINT p,int space_size)
 float drn__get_dist(POIS_POINT* p0, POIS_POINT* p1)
 {
     float dist;
-    dist = sqrt(powf(p1->x - p0->x,2.f) + powf(p1->y - p0->y,2.f));
+    dist = sqrtf(powf(p1->x - p0->x,2.f) + powf(p1->y - p0->y,2.f));
     return dist;
 }
+
 
 int drn__check_bg_grid( POIS_POINT p,
                         POIS_POINT* points,
@@ -129,29 +132,42 @@ int drn__check_bg_grid( POIS_POINT p,
 {
     int res = 1;
     
-    int startx = drn__clamp(floor(floor(p.x-radius) / unit_size),0,grid_size);
-    int starty = drn__clamp(floor(floor(p.y-radius) / unit_size),0,grid_size);
-    int endx = drn__clamp(ceil(ceil(p.x+radius) / unit_size),0,grid_size);
-    int endy = drn__clamp(ceil(ceil(p.y+radius) / unit_size),0,grid_size);
+    int tmp = (int)(floor(p.y/unit_size)*grid_size+floor(p.x/unit_size));
+    if( bg_grid[tmp] >= 0 )
+    {
+        return 0;
+    }
+    
+    int startx = drn__clamp((int)(floor(p.x/unit_size)-2),0,grid_size-1);
+    int starty = drn__clamp((int)(floor(p.y/unit_size)-2),0,grid_size-1);
+    int endx = drn__clamp((int)(ceil(p.x/unit_size)+2),0,grid_size-1);
+    int endy = drn__clamp((int)(ceil(p.y/unit_size)+2),0,grid_size-1);
     int ind;
+    float dist;
     
     POIS_POINT p1;
     
-    for( int y=starty; y<=endy; ++y )
+            if(tmp == 4) printf("\n");
+    for( int y=starty; y<=endy; ++y ) {
         for( int x=startx; x<=endx; ++x )
         {
-            ind = y*grid_size+x;
+            ind = drn__clamp(y*grid_size+x,0,grid_size*grid_size-1);
+            if(tmp == 4) printf("%i ",ind);
             if( bg_grid[ind] >= 0 )
             {
                 p1 = points[bg_grid[ind]];
-                if( drn__get_dist(&p1,&p) < radius )
+                dist = drn__get_dist(&p1,&p);
+                if( dist < radius )
                 {
                     res = 0;
-                    break;
                 }
             }
         }
+        
+            if(tmp == 4) printf("\n");
+    }
     
+            if(tmp == 4) printf("\n");
     return res;
 }
 
@@ -166,7 +182,7 @@ POIS_POINT * drn_poisson_plane( int * num_samples,
     
     // find unit size of a cell
     float unit_sz = separation * sin(DRN_PI_quarter);
-    int grid_dim = ceil((float)space_size/unit_sz);
+    int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT p,pk;
     
     printf("unit_sz: %f\n",unit_sz);
@@ -183,49 +199,54 @@ POIS_POINT * drn_poisson_plane( int * num_samples,
     for( int i=0; i<grid_dim*grid_dim; ++i )
         bg_grid[i] = -1;
     
+    for( int i=0; i<grid_dim*grid_dim; ++i )
+        printf("%d ",bg_grid[i]);
+    printf("\n");
+    
+    
     // emit initial point
     p = drn_generate_uniform_point(space_size);
     point_list[num_points++] = p;
     active_list[num_active++] = num_points-1;
-    bg_grid[(int)(floor(p.y/unit_sz)*grid_dim+floor(p.x/unit_sz))] 
-        = num_points-1;
-    
+    int tmp = (int)(floor(p.y/unit_sz)*grid_dim+floor(p.x/unit_sz));
+    printf("this: %d\n",tmp);
+    bg_grid[tmp] = num_points-1;
     
     // generate points
-    active_ind = floor(POIS_RAND() * num_active);
-    pk = drn__generate_radial_point(p,separation);
-    while(1)
+    while( num_active > 0 )
     {
-        printf("%d\n",c);
-        c++;
-        pk = drn__generate_radial_point(p,separation);
-        if(c >= 30)
-        {
-            printf("c is too high\n");
-            break;
-        }
-        else if( !drn__check_bounds_plane(pk,space_size) )
-        {
-            printf("failed bounds check\n");
-            break;
-        }
-        else if( !drn__check_bg_grid(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
-        {
-            printf("failed grid check\n");
-            break;
-        }
-        //~ else
-        //~ {
-            //~ printf("there was no fail\n");
-            //~ break;
-        //~ }
+        active_ind = floor(POIS_RAND() * num_active);
+        p = point_list[active_list[active_ind]];
+        c = 0;
         
+        while(1)
+        {
+            c += 1;
+            pk = drn__generate_radial_point(p,separation);
+            
+            if( drn__check_bounds_plane(pk,space_size) &&
+                drn__check_bg_grid(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
+            {   // emit this point and add to active list
+                point_list[num_points++] = pk;
+                active_list[num_active++] = num_points-1;
+                tmp = (int)(floor(pk.y/unit_sz)*grid_dim+floor(pk.x/unit_sz));
+                
+                if( bg_grid[tmp] > -1 )
+                    printf("why: %i %i %f %f %i\n",tmp,bg_grid[tmp],pk.x,pk.y,grid_dim);
+                else
+                    printf("hit: %d %d\n",tmp,bg_grid[tmp]);
+                
+                bg_grid[tmp] = num_points-1;
+                break;
+            }
+            else if( c == 30 )
+            {   // remove p from active list
+                active_list[active_ind] = active_list[--num_active];
+                break;
+            }
+        }
     }
-    printf("is it in bounds: %d\n",drn__check_bounds_plane(pk,space_size));
-    printf("iterations: %d\npoint: %f %f\n",c,pk.x,pk.y);
-    printf("origin point: %f %f\n",p.x,p.y);
-    printf("origin grid point: %i %i\n",floor(p.x/unit_sz),floor(p.y/unit_sz));
-    printf("dist: %f\n",drn__get_dist(&p,&pk));
+    
     
     // free background grid
     free(bg_grid);
