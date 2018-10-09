@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
     srand(sdnum);
     
     POIS_POINT p;
+    POIS_POINT avg = drn_generate_zero_point();
 
     int sz = 32;
     float rad = 3.2f; 
@@ -35,7 +36,14 @@ int main(int argc, char **argv) {
     {
         printf("%c ",97+i);
         print_point(&data[i]);
+        avg.x += data[i].x;
+        avg.y += data[i].y;
     }
+    avg.x /= (float)num_samps;
+    avg.y /= (float)num_samps;
+
+    printf("avg: ");
+    print_point(&avg);
 
     int xind,yind;
 
