@@ -34,10 +34,10 @@ POIS_POINT drn_generate_zero_point();
 POIS_POINT * drn_poisson_plane( int * num_samples,
                                 int space_size,
                                 float separation            );
-void drn_poisson_plane( POIS_POINT * data,
-                        int * num_samples,
-                        int space_size,
-                        float separation            );
+void drn_poisson_plane_in_place(POIS_POINT * data,
+                                int * num_samples,
+                                int space_size,
+                                float separation            );
 /*
  * Generates Poisson-distributed points on a zero-centered disk
  *  - similar to plane, but restricts points based on a radius
@@ -45,12 +45,10 @@ void drn_poisson_plane( POIS_POINT * data,
 POIS_POINT * drn_poisson_disk(  int * num_samples,
                                 int space_radius,
                                 float separation            );
-void drn_poisson_disk(  POIS_POINT * data,
-                        int * num_samples,
-                        int space_radius,
-                        float separation            );
-
-
+void drn_poisson_disk_in_place( POIS_POINT * data,
+                                int * num_samples,
+                                int space_radius,
+                                float separation            );
 
 
 #ifdef __cplusplus
@@ -266,10 +264,10 @@ POIS_POINT * drn_poisson_plane( int * num_samples,
     return point_list;
 }
 
-void drn_poisson_plane( POIS_POINT * data,
-                        int * num_samples,
-                        int space_size,
-                        float separation            )
+void drn_poisson_plane_in_place( POIS_POINT * data,
+                                    int * num_samples,
+                                    int space_size,
+                                    float separation            )
 {
     int max_samples = (*num_samples);
 
@@ -423,6 +421,91 @@ POIS_POINT * drn_poisson_disk(  int * num_samples,
     return point_list;
 }
 
+void drn_poisson_disk_in_place( POIS_POINT * data,
+                                int * num_samples,
+                                int space_radius,
+                                float separation            )
+{
+    int max_samples = (*num_samples);
+
+    int space_size = 2*space_radius;
+    POIS_POINT cp;
+    cp.x = space_radius;
+    cp.y = space_radius;
+    
+    int failout = 0;
+    int c = 0;
+    int active_ind;
+    
+    // find unit size of a cell
+    float unit_sz = separation * sin(DRN_PI_quarter);
+    int grid_dim = (int)ceil((float)space_size/unit_sz);
+    POIS_POINT p,pk;
+    
+    // allocate background grid and active list for point comparisons
+    int * bg_grid = malloc(sizeof(int)*grid_dim*grid_dim);
+    unsigned int * active_list = malloc(sizeof(unsigned int)*grid_dim*grid_dim);    
+    unsigned int num_active = 0;
+    //~ POIS_POINT * point_list = malloc(sizeof(POIS_POINT)*grid_dim*grid_dim);
+    unsigned int num_points = 0;
+    
+    // initialize background grid with -1
+    for( int i=0; i<grid_dim*grid_dim; ++i )
+        bg_grid[i] = -1;
+        
+    // emit initial point
+    p = drn_generate_uniform_point(space_size);
+    while( drn__get_dist(&p,&cp) > space_radius )
+        p = drn_generate_uniform_point(space_size);
+    data[num_points++] = p;
+    active_list[num_active++] = num_points-1;
+    int tmp = (int)(floor(p.y/unit_sz)*grid_dim+floor(p.x/unit_sz));
+    
+    bg_grid[tmp] = num_points-1;
+    
+    // generate points
+    while( num_active > 0 )
+    {
+        active_ind = floor(POIS_RAND() * num_active);
+        p = data[active_list[active_ind]];
+        c = 0;
+        
+        while(1)
+        {
+            c += 1;
+            pk = drn__generate_radial_point(p,separation);
+            
+            if( ( drn__get_dist(&pk,&cp) < space_radius ) &&
+                drn__check_bg_grid(pk,data,bg_grid,grid_dim,unit_sz,separation) )
+            {   // emit this point and add to active list
+                data[num_points++] = pk;
+                active_list[num_active++] = num_points-1;
+                tmp = (int)(floor(pk.y/unit_sz)*grid_dim+floor(pk.x/unit_sz));
+                                
+                bg_grid[tmp] = num_points-1;
+                break;
+            }
+            else if( c == DRN_k )
+            {   // remove p from active list
+                active_list[active_ind] = active_list[--num_active];
+                break;
+            }
+        }
+    }
+    
+    // free background grid
+    free(bg_grid);
+    free(active_list);
+    
+    // shift points to zero-centered
+    for( int i=0; i<num_points; ++i )
+    {
+        data[i].x -= space_radius;
+        data[i].y -= space_radius;
+    }
+
+    *num_samples = num_points;
+}
 
 
 
