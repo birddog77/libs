@@ -151,8 +151,6 @@ int drn__check_bg_grid( POIS_POINT p,
                         float unit_size,
                         float radius        )
 {
-    int res = 1;
-    
     int tmp = (int)(floor(p.y/unit_size)*grid_size+floor(p.x/unit_size));
     if( bg_grid[tmp] >= 0 )
     {
@@ -179,13 +177,13 @@ int drn__check_bg_grid( POIS_POINT p,
                 dist = drn__get_dist(&p1,&p);
                 if( dist < radius )
                 {
-                    res = 0;
+                    return 0;
                 }
             }
         }    
     }
     
-    return res;
+    return 1;
 }
 
 

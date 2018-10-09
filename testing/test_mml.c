@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     POIS_POINT p;
     POIS_POINT avg = drn_generate_zero_point();
 
-    int sz = 32;
+    int sz = 16;
     float rad = 3.2f; 
 
     int num_samps;
