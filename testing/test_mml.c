@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
     POIS_POINT p;
 
     int sz = 32;
-    float rad = 10.2f; 
+    float rad = 3.2f; 
 
     int num_samps;
     POIS_POINT * data = drn_poisson_plane(&num_samps,sz,rad);

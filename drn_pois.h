@@ -222,7 +222,7 @@ POIS_POINT * drn_poisson_plane( int * num_samples,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == 30 )
+            else if( c == DRN_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
