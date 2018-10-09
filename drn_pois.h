@@ -15,19 +15,32 @@ typedef struct {
 typedef struct {
     float theta;
     float r;
-} SPHERE_POINT;
+} POLAR_POINT;
 
+/*
+ * Generates a uniform random point normalized over the input space
+ * */
+POIS_POINT drn_generate_uniform_point(int space);
 
-POIS_POINT drn_generate_uniform_point(int);
+/*
+ * Generates a zero (0,0) point
+ * */
 POIS_POINT drn_generate_zero_point();
 
+/*
+ * Generates Poisson-distributed points on a plane of the given size
+ *  - the number of samples generated is returned in num_samples
+ * */
 POIS_POINT * drn_poisson_plane( int * num_samples,
                                 int space_size,
                                 float separation            );
 
+/*
+ * Generates Poisson-distributed points on a zero-centered disk
+ *  - similar to plane, but restricts points based on a radius
+ * */
 POIS_POINT * drn_poisson_disk(  int * num_samples,
                                 int space_radius,
-                                POIS_POINT center,
                                 float separation            );
 
 
@@ -52,7 +65,6 @@ POIS_POINT * drn_poisson_disk(  int * num_samples,
 #pragma GCC diagnostic ignored "-Wsign-compare"
 
 #include <math.h>
-#include <assert.h>
 
 /* can override this macro for other sources of uniform random variables */
 #ifndef POIS_RAND
@@ -242,7 +254,6 @@ POIS_POINT * drn_poisson_plane( int * num_samples,
 
 POIS_POINT * drn_poisson_disk(  int * num_samples,
                                 int space_radius,
-                                POIS_POINT center,
                                 float separation            )
 {
 }
