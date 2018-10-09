@@ -312,8 +312,7 @@ POIS_POINT * drn_poisson_disk(  int * num_samples,
             c += 1;
             pk = drn__generate_radial_point(p,separation);
             
-            if( drn__check_bounds_plane(pk,space_size) &&
-                ( drn__get_dist(&pk,&cp) < space_radius ) &&
+            if( ( drn__get_dist(&pk,&cp) < space_radius ) &&
                 drn__check_bg_grid(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 point_list[num_points++] = pk;
