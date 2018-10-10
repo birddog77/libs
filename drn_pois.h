@@ -12,11 +12,6 @@ typedef struct {
     float y;
 } POIS_POINT;
 
-typedef struct {
-    float theta;
-    float r;
-} POLAR_POINT;
-
 /*
  * Generates a uniform random point normalized over the input space
  * */

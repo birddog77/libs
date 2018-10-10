@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     int sz = 32;
     float rad = 3.2f; 
 
-    int num_samps = 40;
+    int num_samps = 80;
     POIS_POINT * data = malloc(sizeof(POIS_POINT)*num_samps);
     drn_poisson_plane_in_place(data,&num_samps,sz,rad);
 
