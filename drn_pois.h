@@ -464,7 +464,7 @@ void drn_poisson_disk_in_place( POIS_POINT * data,
     bg_grid[tmp] = num_points-1;
     
     // generate points
-    while( num_active > 0 )
+    while( num_active > 0 && num_points < max_samples )
     {
         active_ind = floor(POIS_RAND() * num_active);
         p = data[active_list[active_ind]];

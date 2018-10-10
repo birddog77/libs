@@ -24,11 +24,14 @@ int main(int argc, char **argv) {
     POIS_POINT p;
     POIS_POINT avg = drn_generate_zero_point();
 
-    int sz = 24;
+
+
+    int sz = 32;
     float rad = 3.2f; 
 
-    int num_samps;
-    POIS_POINT * data = drn_poisson_disk(&num_samps,sz/2,rad);
+    int num_samps = 50;
+    POIS_POINT * data = malloc(sizeof(POIS_POINT)*num_samps);
+    drn_poisson_disk_in_place(data,&num_samps,sz/2,rad);
 
     printf("num samps: %d\n",num_samps);
 
