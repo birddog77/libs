@@ -6,7 +6,7 @@
 
 #include <time.h>
 
-void print_point(POIS_POINT* p)
+void print_point(POIS_POINT2* p)
 {
     printf("%f %f\n",p->x,p->y);
 }
@@ -21,8 +21,8 @@ int main(int argc, char **argv) {
 
     srand(sdnum);
     
-    POIS_POINT p;
-    POIS_POINT avg = drn_generate_zero_point();
+    POIS_POINT2 p;
+    POIS_POINT2 avg = drn_generate_zero_point2();
 
 
 
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     float rad = 3.2f; 
 
     int num_samps = 80;
-    POIS_POINT * data = malloc(sizeof(POIS_POINT)*num_samps);
+    POIS_POINT2 * data = malloc(sizeof(POIS_POINT2)*num_samps);
     drn_poisson_plane_in_place(data,&num_samps,sz,rad);
 
     printf("num samps: %d\n",num_samps);
