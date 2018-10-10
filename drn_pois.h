@@ -508,13 +508,6 @@ void drn_poisson_disk_in_place( POIS_POINT * data,
 }
 
 
-
-
-
-
-
 #pragma GCC diagnostic pop
 
 #endif /* DRN_POIS_IMPLEMENTATION */
-
-
