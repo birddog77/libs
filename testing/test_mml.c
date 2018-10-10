@@ -29,9 +29,9 @@ int main(int argc, char **argv) {
     int sz = 32;
     float rad = 3.2f; 
 
-    int num_samps = 50;
+    int num_samps = 40;
     POIS_POINT * data = malloc(sizeof(POIS_POINT)*num_samps);
-    drn_poisson_disk_in_place(data,&num_samps,sz/2,rad);
+    drn_poisson_plane_in_place(data,&num_samps,sz,rad);
 
     printf("num samps: %d\n",num_samps);
 
@@ -56,8 +56,8 @@ int main(int argc, char **argv) {
     for( int i=0; i<num_samps; i++ )
     {
         p = data[i];
-        xind = floor(p.x+sz/2);
-        yind = floor(p.y+sz/2);
+        xind = floor(p.x);
+        yind = floor(p.y);
         char_data[yind*sz+xind] = '@';
     }
 
