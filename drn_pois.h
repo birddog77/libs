@@ -395,7 +395,6 @@ void drn_poisson_box_in_place(  POIS_POINT3 * data,
 {
     int max_samples = (*num_samples);
     
-    int failout = 0;
     int c = 0;
     int active_ind;
     
@@ -405,10 +404,9 @@ void drn_poisson_box_in_place(  POIS_POINT3 * data,
     POIS_POINT3 p,pk;
     
     // allocate background grid and active list for point comparisons
-    int * bg_grid = malloc(sizeof(int)*grid_dim*grid_dim*grid_dim);
-    unsigned int * active_list = malloc(sizeof(unsigned int)*grid_dim*grid_dim*grid_dim);    
+    int * bg_grid = (int*)malloc(sizeof(int)*grid_dim*grid_dim*grid_dim);
+    unsigned int * active_list = (unsigned int*)malloc(sizeof(unsigned int)*grid_dim*grid_dim*grid_dim);    
     unsigned int num_active = 0;
-    //~ POIS_POINT3 * point_list = malloc(sizeof(POIS_POINT2)*grid_dim*grid_dim*grid_dim);
     unsigned int num_points = 0;
     
     // initialize background grid with -1
@@ -470,7 +468,6 @@ POIS_POINT3 * drn_poisson_box(      int * num_samples,
                                     int space_size,
                                     float separation            )
 {
-    int failout = 0;
     int c = 0;
     int active_ind;
     
@@ -480,10 +477,10 @@ POIS_POINT3 * drn_poisson_box(      int * num_samples,
     POIS_POINT3 p,pk;
     
     // allocate background grid and active list for point comparisons
-    int * bg_grid = malloc(sizeof(int)*grid_dim*grid_dim*grid_dim);
-    unsigned int * active_list = malloc(sizeof(unsigned int)*grid_dim*grid_dim*grid_dim);    
+    int * bg_grid = (int*)malloc(sizeof(int)*grid_dim*grid_dim*grid_dim);
+    unsigned int * active_list = (unsigned int*)malloc(sizeof(unsigned int)*grid_dim*grid_dim*grid_dim);    
     unsigned int num_active = 0;
-    POIS_POINT3 * point_list = malloc(sizeof(POIS_POINT2)*grid_dim*grid_dim*grid_dim);
+    POIS_POINT3 * point_list = (POIS_POINT3*)malloc(sizeof(POIS_POINT2)*grid_dim*grid_dim*grid_dim);
     unsigned int num_points = 0;
     
     // initialize background grid with -1
@@ -547,7 +544,6 @@ POIS_POINT2 * drn_poisson_plane(    int * num_samples,
                                     int space_size,
                                     float separation            )
 {
-    int failout = 0;
     int c = 0;
     int active_ind;
     
@@ -557,10 +553,10 @@ POIS_POINT2 * drn_poisson_plane(    int * num_samples,
     POIS_POINT2 p,pk;
     
     // allocate background grid and active list for point comparisons
-    int * bg_grid = malloc(sizeof(int)*grid_dim*grid_dim);
-    unsigned int * active_list = malloc(sizeof(unsigned int)*grid_dim*grid_dim);    
+    int * bg_grid = (int*)malloc(sizeof(int)*grid_dim*grid_dim);
+    unsigned int * active_list = (unsigned int*)malloc(sizeof(unsigned int)*grid_dim*grid_dim);    
     unsigned int num_active = 0;
-    POIS_POINT2 * point_list = malloc(sizeof(POIS_POINT2)*grid_dim*grid_dim);
+    POIS_POINT2 * point_list = (POIS_POINT2*)malloc(sizeof(POIS_POINT2)*grid_dim*grid_dim);
     unsigned int num_points = 0;
     
     // initialize background grid with -1
@@ -622,7 +618,6 @@ void drn_poisson_plane_in_place(    POIS_POINT2 * data,
 {
     int max_samples = (*num_samples);
 
-    int failout = 0;
     int c = 0;
     int active_ind;
     
@@ -632,10 +627,9 @@ void drn_poisson_plane_in_place(    POIS_POINT2 * data,
     POIS_POINT2 p,pk;
     
     // allocate background grid and active list for point comparisons
-    int * bg_grid = malloc(sizeof(int)*grid_dim*grid_dim);
-    unsigned int * active_list = malloc(sizeof(unsigned int)*grid_dim*grid_dim);    
+    int * bg_grid = (int*)malloc(sizeof(int)*grid_dim*grid_dim);
+    unsigned int * active_list = (unsigned int*)malloc(sizeof(unsigned int)*grid_dim*grid_dim);    
     unsigned int num_active = 0;
-    //~ POIS_POINT * point_list = malloc(sizeof(POIS_POINT)*grid_dim*grid_dim);
     unsigned int num_points = 0;
     
     // initialize background grid with -1
@@ -696,7 +690,6 @@ POIS_POINT2 * drn_poisson_disk(     int * num_samples,
     cp.x = space_radius;
     cp.y = space_radius;
     
-    int failout = 0;
     int c = 0;
     int active_ind;
     
@@ -706,10 +699,10 @@ POIS_POINT2 * drn_poisson_disk(     int * num_samples,
     POIS_POINT2 p,pk;
     
     // allocate background grid and active list for point comparisons
-    int * bg_grid = malloc(sizeof(int)*grid_dim*grid_dim);
-    unsigned int * active_list = malloc(sizeof(unsigned int)*grid_dim*grid_dim);    
+    int * bg_grid = (int*)malloc(sizeof(int)*grid_dim*grid_dim);
+    unsigned int * active_list = (unsigned int*)malloc(sizeof(unsigned int)*grid_dim*grid_dim);    
     unsigned int num_active = 0;
-    POIS_POINT2 * point_list = malloc(sizeof(POIS_POINT2)*grid_dim*grid_dim);
+    POIS_POINT2 * point_list = (POIS_POINT2*)malloc(sizeof(POIS_POINT2)*grid_dim*grid_dim);
     unsigned int num_points = 0;
     
     // initialize background grid with -1
@@ -784,7 +777,6 @@ void drn_poisson_disk_in_place( POIS_POINT2 * data,
     cp.x = space_radius;
     cp.y = space_radius;
     
-    int failout = 0;
     int c = 0;
     int active_ind;
     
@@ -794,10 +786,9 @@ void drn_poisson_disk_in_place( POIS_POINT2 * data,
     POIS_POINT2 p,pk;
     
     // allocate background grid and active list for point comparisons
-    int * bg_grid = malloc(sizeof(int)*grid_dim*grid_dim);
-    unsigned int * active_list = malloc(sizeof(unsigned int)*grid_dim*grid_dim);    
+    int * bg_grid = (int*)malloc(sizeof(int)*grid_dim*grid_dim);
+    unsigned int * active_list = (unsigned int*)malloc(sizeof(unsigned int)*grid_dim*grid_dim);    
     unsigned int num_active = 0;
-    //~ POIS_POINT * point_list = malloc(sizeof(POIS_POINT)*grid_dim*grid_dim);
     unsigned int num_points = 0;
     
     // initialize background grid with -1
@@ -869,7 +860,6 @@ POIS_POINT3 * drn_poisson_sphere(   int * num_samples,
     cp.y = space_radius;
     cp.z = space_radius;
     
-    int failout = 0;
     int c = 0;
     int active_ind;
     
@@ -879,10 +869,10 @@ POIS_POINT3 * drn_poisson_sphere(   int * num_samples,
     POIS_POINT3 p,pk;
     
     // allocate background grid and active list for point comparisons
-    int * bg_grid = malloc(sizeof(int)*grid_dim*grid_dim*grid_dim);
-    unsigned int * active_list = malloc(sizeof(unsigned int)*grid_dim*grid_dim*grid_dim);    
+    int * bg_grid = (int*)malloc(sizeof(int)*grid_dim*grid_dim*grid_dim);
+    unsigned int * active_list = (unsigned int*)malloc(sizeof(unsigned int)*grid_dim*grid_dim*grid_dim);    
     unsigned int num_active = 0;
-    POIS_POINT3 * point_list = malloc(sizeof(POIS_POINT2)*grid_dim*grid_dim*grid_dim);
+    POIS_POINT3 * point_list = (POIS_POINT3*)malloc(sizeof(POIS_POINT2)*grid_dim*grid_dim*grid_dim);
     unsigned int num_points = 0;
     
     // initialize background grid with -1
@@ -963,7 +953,6 @@ void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
     cp.y = space_radius;
     cp.z = space_radius;
     
-    int failout = 0;
     int c = 0;
     int active_ind;
     
@@ -973,10 +962,9 @@ void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
     POIS_POINT3 p,pk;
     
     // allocate background grid and active list for point comparisons
-    int * bg_grid = malloc(sizeof(int)*grid_dim*grid_dim*grid_dim);
-    unsigned int * active_list = malloc(sizeof(unsigned int)*grid_dim*grid_dim*grid_dim);    
+    int * bg_grid = (int*)malloc(sizeof(int)*grid_dim*grid_dim*grid_dim);
+    unsigned int * active_list = (unsigned int*)malloc(sizeof(unsigned int)*grid_dim*grid_dim*grid_dim);    
     unsigned int num_active = 0;
-    //~ POIS_POINT3 * point_list = malloc(sizeof(POIS_POINT2)*grid_dim*grid_dim*grid_dim);
     unsigned int num_points = 0;
     
     // initialize background grid with -1
