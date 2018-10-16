@@ -160,12 +160,12 @@ typedef enum {
 } NOTE;
 
 typedef enum {
-    SINE,
-    SQUARE,
+    SQUARE_ONE_EIGHTH,
     SQUARE_QUARTER,
-    RAW_SAWTOOTH,
-    ORGAN,
-    CHOIR,
+    SQUARE_HALF,
+    SQUARE_THREE_QUARTER,
+    TRIANGLE,
+    NOISE,
     NUM_VOICES
 } VOICE;
 
@@ -175,13 +175,13 @@ enum {
     PLUS = 1
 };
 
-static unsigned int mml_wavetable[NUM_VOICES][16] = {
-    {5,8,10,13,14,15,14,13,10,8,5,2,1,0,1,2},               // sine
-    {0,0,0,0,0,0,0,0,15,15,15,15,15,15,15,15},              // square
-    {0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15},                  // square-quarter
-    {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15},                // raw sawtooth
-    {11,15,9,13,5,10,9,8,7,6,5,10,2,6,0,4},                 // organ
-    {0,3,7,11,15,12,10,11,12,13,15,13,11,8,5,2}             // choir
+static unsigned char mml_wavetable[NUM_VOICES][16] = {
+    {15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0},                    // square-one-eighth
+    {15,15,15,15,0,0,0,0,0,0,0,0,0,0,0,0},                  // square-quarter
+    {15,15,15,15,15,15,15,15,0,0,0,0,0,0,0,0},              // square-half
+    {15,15,15,15,15,15,15,15,15,15,15,15,0,0,0,0},          // square-three-quarter
+    {0,2,4,6,9,11,13,15,15,13,11,9,6,4,2,0},                // triangle
+    {8,10,12,9,7,1,3,0,6,15,2,4,11,14,13,5}                 // noise
 };
 
 static float mml_note_frequencies[108] = {
@@ -655,7 +655,7 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt)
         
         if( n->frequency )
         {
-            c = DRN_NOTE_LOOKUP(m->decode_state.accum_time,SQUARE,n->frequency);
+            c = DRN_NOTE_LOOKUP(m->decode_state.accum_time,SQUARE_HALF,n->frequency);
             
             //~ c = DRN_ONE_NOTE(m->decode_state.accum_time,n->frequency);
             //~ r += (v*DRN_ONE_NOTE(m->decode_state.accum_time,n->frequency));
