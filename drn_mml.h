@@ -159,12 +159,30 @@ typedef enum {
     NOTE_none = -1
 } NOTE;
 
+typedef enum {
+    SINE,
+    SQUARE,
+    SQUARE_QUARTER,
+    RAW_SAWTOOTH,
+    ORGAN,
+    CHOIR,
+    NUM_VOICES
+} VOICE;
+
 enum {
     MINUS = -1, 
     NONE = 0, 
     PLUS = 1
 };
 
+static unsigned int mml_wavetable[NUM_VOICES][16] = {
+    {5,8,10,13,14,15,14,13,10,8,5,2,1,0,1,2},               // sine
+    {0,0,0,0,0,0,0,0,15,15,15,15,15,15,15,15},              // square
+    {0,0,0,0,0,0,0,0,0,0,0,0,15,15,15,15},                  // square-quarter
+    {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15},                // raw sawtooth
+    {11,15,9,13,5,10,9,8,7,6,5,10,2,6,0,4},                 // organ
+    {0,3,7,11,15,12,10,11,12,13,15,13,11,8,5,2}             // choir
+};
 
 static float mml_note_frequencies[108] = {
 	16.35 	,
@@ -280,14 +298,19 @@ static float mml_note_frequencies[108] = {
 static double mml_quant_values[9] = 
     { 0.15, 0.25, 0.3, 0.45, 0.6, 0.75, 0.8, 0.9, 1.0 };
 
-#define NULLCHAR '\0'
-#define DRN_PI 3.14159265359
-#define DRN_PI_twice DRN_PI*2.0
-#define DRN_PI_inv 0.31831
-#define DRN_SQUARE(x) (sin(x) > 0 ? 1.0 : -1.0)
-#define DRN_ONE_NOTE(t,note) ( \
-    0.99999*DRN_SQUARE(note*DRN_PI_twice*t) \
-        )
+#define NULLCHAR                '\0'
+#define DRN_GET_DECIMAL(f)      (f-floor(f))
+#define DRN_PI                  3.14159265359
+#define DRN_PI_twice            DRN_PI*2.0
+#define DRN_PI_inv              0.31831
+#define DRN_PI_inv_twice        0.15915
+#define DRN_SQUARE(x)           (sin(x) > 0 ? 1.0 : -1.0)
+#define DRN_SAMPLE_WAVETABLE(t,voice,note) \
+        mml_wavetable[voice][int(roundf(15.f*DRN_GET_DECIMAL(note*t)))]
+#define DRN_NOTE_LOOKUP(t,voice,note) \
+        ((double(DRN_SAMPLE_WAVETABLE(t,voice,note)) \
+        / 15.0 ) * 2.0 - 1.0 ) * 0.90
+#define DRN_ONE_NOTE(t,note)    ( 0.99999*DRN_SQUARE(note*DRN_PI_twice*t) )
 
 static const char* mml_buf = NULL;
 static unsigned int mml_index = 0;
@@ -597,7 +620,7 @@ void drn_mml_reset_decode_state(drn_mml_t* m)
 double drn_mml_decode_stream(drn_mml_t* m,double dt)
 {
     int i,j;
-    double r,v;
+    double r,v,c;
     mml_note_t * n;
     r = 0.0;
     v = m->data.volume;
@@ -632,7 +655,11 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt)
         
         if( n->frequency )
         {
-            r += (v*DRN_ONE_NOTE(m->decode_state.accum_time,n->frequency));
+            c = DRN_NOTE_LOOKUP(m->decode_state.accum_time,SQUARE,n->frequency);
+            
+            //~ c = DRN_ONE_NOTE(m->decode_state.accum_time,n->frequency);
+            //~ r += (v*DRN_ONE_NOTE(m->decode_state.accum_time,n->frequency));
+            r += (v*c);
         }
     }
         

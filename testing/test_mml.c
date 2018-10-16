@@ -27,11 +27,11 @@ int main(int argc, char **argv) {
 
 
     int sz = 32;
-    float rad = 3.2f; 
+    float rad = 5.2f; 
 
-    int num_samps = 80;
-    POIS_POINT2 * data = malloc(sizeof(POIS_POINT2)*num_samps);
-    drn_poisson_plane_in_place(data,&num_samps,sz,rad);
+    int num_samps;
+    POIS_POINT2 * data;
+    data = drn_poisson_plane(&num_samps,sz,rad);
 
     printf("num samps: %d\n",num_samps);
 
