@@ -5,12 +5,15 @@
 extern "C" {
 #endif
 
-struct BEZ_POINT2D {
-   float x;
-   float y;
-};
+typedef union {
+   struct {
+      float x;
+      float y;
+   };
+   float data[2];
+} BEZ_POINT2D;
 
-float drn_bezier_cubic2D(float t, BEZ_POINT2D control[4]);
+BEZ_POINT2D drn_bezier_cubic2D(float t, BEZ_POINT2D control[4]);
 
 
 

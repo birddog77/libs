@@ -1,14 +1,12 @@
-#define DRN_MML_IMPLEMENTATION
-#include "../drn_mml.h"
 
 #define DRN_POIS_IMPLEMENTATION
 #include "../drn_pois.h"
-
+#include <stdio.h>
 #include <time.h>
 
-void print_point(POIS_POINT2* p)
+void print_point(POIS_POINT1* p)
 {
-    printf("%f %f\n",p->x,p->y);
+    printf("%f \n",p->x);
 }
 
 
@@ -21,29 +19,29 @@ int main(int argc, char **argv) {
 
     srand(sdnum);
     
-    POIS_POINT2 p;
-    POIS_POINT2 avg = drn_generate_zero_point2();
+    POIS_POINT1 p;
+    POIS_POINT1 avg = drn_generate_zero_point1();
 
 
 
-    int sz = 32;
-    float rad = 5.2f; 
+    int sz = 100;
+    float rad = 2.10f; 
 
-    int num_samps;
-    POIS_POINT2 * data;
-    data = drn_poisson_plane(&num_samps,sz,rad);
+    int num_samps = 12;
+    printf("num sampls: %d\n",num_samps);
+    POIS_POINT1 * data = (POIS_POINT1*)malloc(sizeof(POIS_POINT1)*num_samps); 
+    drn_poisson_line_in_place(data,&num_samps,sz,rad);
 
     printf("num samps: %d\n",num_samps);
 
     for( int i=0; i<num_samps; i++ )
     {
         printf("%c ",97+i);
+        printf("%f ",floor(data[i].x));
         print_point(&data[i]);
         avg.x += data[i].x;
-        avg.y += data[i].y;
     }
     avg.x /= (float)num_samps;
-    avg.y /= (float)num_samps;
 
     printf("avg: ");
     print_point(&avg);
@@ -57,17 +55,15 @@ int main(int argc, char **argv) {
     {
         p = data[i];
         xind = floor(p.x);
-        yind = floor(p.y);
-        char_data[yind*sz+xind] = '@';
+        char_data[xind] = '@';
     }
 
     for(int i=0; i<sz; i++ )
     {
-        for( int j=0; j<sz; j++ )
-            printf("%c ",char_data[i*sz+j]);
-        printf("\n");
+        printf("%c ",char_data[i]);
     }
 
+   printf("\n");
 
 
 
