@@ -45,6 +45,7 @@ typedef struct {
     double length;
     double volume;
     unsigned int track_count;
+    unsigned int * waves;     // indexes into wavetable
     mml_note_t ** tracks;
 } mml_data_t;
 
@@ -306,15 +307,16 @@ static double mml_quant_values[9] =
 #define DRN_PI_inv_twice        0.15915
 #define DRN_SQUARE(x)           (sin(x) > 0 ? 1.0 : -1.0)
 #define DRN_SAMPLE_WAVETABLE(t,voice,note) \
-        mml_wavetable[voice][int(roundf(15.f*DRN_GET_DECIMAL(note*t)))]
+        mml_wavetable[voice][(int)(roundf(15.f*DRN_GET_DECIMAL(note*t)))]
 #define DRN_NOTE_LOOKUP(t,voice,note) \
-        ((double(DRN_SAMPLE_WAVETABLE(t,voice,note)) \
+        (((double)(DRN_SAMPLE_WAVETABLE(t,voice,note)) \
         / 15.0 ) * 2.0 - 1.0 ) * 0.90
 #define DRN_ONE_NOTE(t,note)    ( 0.99999*DRN_SQUARE(note*DRN_PI_twice*t) )
 
 static const char* mml_buf = NULL;
 static unsigned int mml_index = 0;
 static double mml_length_counter = 0.0;
+static double mml_sequence_counter = 0.0;
 
 void mml__skipwhite_and_nums_s()
 {
@@ -370,6 +372,7 @@ int mml__get_token_s()
             case 'q':
             case '<':
             case '>':
+            case 'w':
             case ';':   /* track finish     */
             case '/':   /* comment          */
             case '[':   /* sequence         */
@@ -492,99 +495,6 @@ NOTE mml__fetch_note(int note,int mod)
     return NOTE_none;
 }
 
-void mml__parse_sequence_s(drn_mml_t* song,mml_read_state_t* state)
-{
-    mml_note_t * track = NULL; /* note storage for this seq */
-    
-    mml_read_state_t rs;
-    memcpy(&rs,state,sizeof(mml_read_state_t));
-    
-    int c,n,i,j,m;
-    double rest_len;
-    
-    /* parser loop */
-    while(  (c = mml_buf[mml_index++]) != ']'  )
-    {
-        assert( c != NULLCHAR );
-        switch( c ) {
-            case '/':   /* comment */
-                if( (c = mml_buf[mml_index++]) == '/' )      /* check for follow '/' */
-                    mml__skipline_s();
-                break;
-            case 'l':   /* note length */
-                if( (n = mml__get_num_modifier_s()) > 0 )
-                    rs.note_length = 1.0/(double)n;
-                break;
-            case 'o':   /* note octave */
-                if( (n = mml__get_num_modifier_s()) != -1 )
-                    rs.octave = mml__clamp(n,0,8);
-                break;
-            case '<':   /* octave shift up */
-                rs.octave = mml__clamp(rs.octave+1,0,8);
-                break;
-            case '>':   /* octave shift dn */
-                rs.octave = mml__clamp(rs.octave-1,0,8);
-                break;
-            case 'q':   /* note hit length */
-                if( (n = mml__get_num_modifier_s()) != -1 )
-                    rs.hit_length = mml_quant_values[mml__clamp(n,0,8)];
-                break;
-            case '[':   /* parse sequence */
-                mml__parse_sequence_s(song,&rs);
-                break;
-            case 'a':   /* notes */
-            case 'b':
-            case 'c':
-            case 'd':
-            case 'e':
-            case 'f':
-            case 'g':
-            case 'r':
-            case 'p':
-                m = mml__get_note_modifier_s();
-                i = mml__fetch_note(c,m);
-                n = mml__get_num_modifier_s();
-                
-                mml_note_t note;
-                note.frequency = (i == -1) ? 0.0 : mml_note_frequencies[12*rs.octave+i];
-                note.length = (n>0) ? 1.0/(double)n : rs.note_length;
-                
-                rest_len = (1.0-rs.hit_length)*note.length;
-                note.length *= rs.hit_length;
-                note.accum_time = 0.0;
-                sb_push(track,note);
-                
-                if(  rs.hit_length < 1.0 )
-                {
-                    mml_note_t rest;
-                    rest.frequency = 0.0;
-                    rest.length = rest_len;
-                    rest.accum_time = 0.0;
-                    sb_push(track,rest);
-                }
-                
-                break;
-            default:
-                break;
-        };
-    }
-    
-    n = mml__get_num_modifier_s();
-    n = n > 0 ? n : 1;      /* default to 1 loop */
-    
-    for( j=0; j<n; j++ )
-        /* unwind stored notes */
-        for( i=0; i<sb_count(track); i++ )
-        {
-            sb_push(song->data.tracks[song->data.track_count-1],track[i]);
-                        
-            mml_length_counter += track[i].length;
-            if( song->data.length < mml_length_counter )
-                song->data.length = mml_length_counter;
-        }
-    
-    sb_free(track);
-}
 
 const char* mml__read_file(const char* fn)
 {
@@ -706,98 +616,128 @@ drn_mml_t* drn_mml_open_mem(const char* buf)
     song->data.length = 0.0;
     song->data.tracks = NULL;
     mml_length_counter = 0;
-    sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
     song->data.track_count = sb_count(song->data.tracks);
     song->data.tracks[0] = NULL;
     song->decode_state.track_pos = NULL;
     song->decode_state.accum_time = 0.0;
     song->data.volume = 1.0;
+    song->data.waves = NULL;
     
-    mml_read_state_t rs;
-    rs.note_length = .25;
-    rs.hit_length = .75;
-    rs.octave = 4;
+    int wave_define = 1;
+    mml_read_state_t * rs = NULL;
     
+    int current_track = 0;
     int n,i,m;
     
     /* main parser loop */
-    while( mml_buf[mml_index] != NULLCHAR )
-    {
-        c = mml__get_token_s();
-        switch( c ) {
-            case '/':   /* comment */
-                if( (c = mml_buf[mml_index++]) == '/' )      /* check for follow '/' */
-                    mml__skipline_s();
-                break;
-            case ';':   /* end current track and start new track */
-                if( sb_count(song->data.tracks[song->data.track_count-1]) > 0 )
-                {
-                    sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
-                    song->data.tracks[song->data.track_count] = NULL;
-                    song->data.track_count = sb_count(song->data.tracks);
-                    mml_length_counter = 0;
-                    song->data.volume += 1.0;
-                }
-                break;
-            case 'l':   /* note length */
-                if( (n = mml__get_num_modifier_s()) > 0 )
-                    rs.note_length = 1.0/(double)n;
-                break;
-            case 'o':   /* note octave */
-                if( (n = mml__get_num_modifier_s()) != -1 )
-                    rs.octave = mml__clamp(n,0,8);
-                break;
-            case '<':   /* octave shift up */
-                rs.octave = mml__clamp(rs.octave+1,0,8);
-                break;
-            case '>':   /* octave shift dn */
-                rs.octave = mml__clamp(rs.octave-1,0,8);
-                break;
-            case 'q':   /* note hit length */
-                if( (n = mml__get_num_modifier_s()) != -1 )
-                    rs.hit_length = mml_quant_values[mml__clamp(n,0,8)];
-                break;
-            case '[':   /* parse sequence */
-                mml__parse_sequence_s(song,&rs);
-                break;
-            case 'a':   /* notes */
-            case 'b':
-            case 'c':
-            case 'd':
-            case 'e':
-            case 'f':
-            case 'g':
-            case 'r':
-            case 'p':
-                m = mml__get_note_modifier_s();
-                i = mml__fetch_note(c,m);
-                n = mml__get_num_modifier_s();
-                
-                mml_note_t note;
-                note.frequency = (i == -1) ? 0.0 : mml_note_frequencies[12*rs.octave+i];
-                note.length = (n>0) ? 1.0/(double)n : rs.note_length;
-                mml_length_counter += note.length;
-                
-                rest_len = (1.0-rs.hit_length)*note.length;
-                note.length *= rs.hit_length;
-                note.accum_time = 0.0;
-                sb_push(song->data.tracks[song->data.track_count-1],note);
-                
-                if(  rs.hit_length < 1.0 )
-                {
-                    mml_note_t rest;
-                    rest.frequency = 0.0;
-                    rest.length = rest_len;
-                    rest.accum_time = 0.0;
-                    sb_push(song->data.tracks[song->data.track_count-1],rest);
-                }
-                
-                if( song->data.length < mml_length_counter )
-                    song->data.length = mml_length_counter;
-                
-                break;
-            default:
-                break;
+   while( mml_buf[mml_index] != NULLCHAR )
+   {
+      c = mml__get_token_s();
+      switch( c ) {
+         case 'w': /* define wave */
+            if( wave_define )
+            {
+               song->data.track_count += 1;
+               current_track = song->data.track_count - 1;
+               
+               sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
+               song->data.tracks[current_track] = NULL;
+               
+               n = mml__get_num_modifier_s();
+               sb_push(song->data.waves,mml__clamp(n,0,NUM_VOICES-1));
+               
+               mml_read_state_t tmp;
+               tmp.note_length = .25;
+               tmp.hit_length = .75;
+               tmp.octave = 4;
+               sb_push(rs,tmp);
+            }
+            break;
+         case '/':   /* comment */
+            if( (c = mml_buf[mml_index++]) == '/' )      /* check for follow '/' */
+                 mml__skipline_s();
+            break;
+         case ';':   /* end current track and start new track */
+         {
+             if( sb_count(song->data.tracks[current_track]) > 0 )
+             {
+                 sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
+                 song->data.tracks[song->data.track_count] = NULL;
+                 song->data.track_count = sb_count(song->data.tracks);
+                 mml_sequence_counter = mml_length_counter;
+                 song->data.volume += 1.0;
+             }
+          }
+             break;
+         case 'l':   /* note length */
+             if( (n = mml__get_num_modifier_s()) > 0 )
+                 rs[current_track].note_length = 1.0/(double)n;
+             break;
+         case 'o':   /* note octave */
+             if( (n = mml__get_num_modifier_s()) != -1 )
+                 rs[current_track].octave = mml__clamp(n,0,8);
+             break;
+         case '<':   /* octave shift up */
+             rs[current_track].octave = mml__clamp(rs[current_track].octave+1,0,8);
+             break;
+         case '>':   /* octave shift dn */
+             rs[current_track].octave = mml__clamp(rs[current_track].octave-1,0,8);
+             break;
+         case 'q':   /* note hit length */
+             if( (n = mml__get_num_modifier_s()) != -1 )
+                 rs[current_track].hit_length = mml_quant_values[mml__clamp(n,0,8)];
+             break;
+         case 'a':   /* notes */
+         case 'b':
+         case 'c':
+         case 'd':
+         case 'e':
+         case 'f':
+         case 'g':
+         case 'r':
+         case 'p':
+         {
+            if( wave_define )
+            {  /* at first note sequence, we finish defining waves and reset counters */
+               wave_define = 0;
+               current_track = 0;
+               mml_sequence_counter = 0.0;
+               mml_length_counter = 0.0;
+            }
+         
+            m = mml__get_note_modifier_s();
+            i = mml__fetch_note(c,m);
+            n = mml__get_num_modifier_s();
+             
+            mml_note_t note;
+            note.frequency = (i == -1) ? 0.0 : mml_note_frequencies[12*rs[current_track].octave+i];
+            note.length = (n>0) ? 1.0/(double)n : rs[current_track].note_length;
+            
+            mml_sequence_counter += note.length;
+            
+            if( mml_sequence_counter > mml_length_counter )
+               mml_length_counter = mml_sequence_counter;
+             
+            rest_len = (1.0-rs[current_track].hit_length)*note.length;
+            note.length *= rs[current_track].hit_length;
+            note.accum_time = 0.0;
+            sb_push(song->data.tracks[current_track],note);
+             
+            if(  rs[current_track].hit_length < 1.0 )
+            {
+               mml_note_t rest;
+               rest.frequency = 0.0;
+               rest.length = rest_len;
+               rest.accum_time = 0.0;
+               sb_push(song->data.tracks[current_track],rest);
+            }
+
+            if( song->data.length < mml_length_counter )
+               song->data.length = mml_length_counter;
+         }
+            break;
+         default:
+            break;
         };
     }
     
@@ -805,13 +745,13 @@ drn_mml_t* drn_mml_open_mem(const char* buf)
     mml_buf = NULL;
     mml_index = 0;
 
-    if( sb_count(song->data.tracks[song->data.track_count-1]) < 1 )
+    if( sb_count(song->data.tracks[current_track]) < 1 )
     {   /* push a spurious rest if last track is empty */
         mml_note_t note;
         note.frequency = 0.0;
         note.length = song->data.length/1000.0;
         note.accum_time = 0.0;
-        sb_push(song->data.tracks[song->data.track_count-1],note);
+        sb_push(song->data.tracks[current_track],note);
         song->data.volume -= 1.0;
     }
     
