@@ -611,11 +611,15 @@ drn_mml_t* drn_mml_open_mem(const char* buf)
     mml_buf = buf;
     mml_index = 0;
     
+    mml_length_counter = 0;
+    mml_sequence_counter = 0;
+    
     drn_mml_t* song = (drn_mml_t*)malloc(sizeof(drn_mml_t));
     song->data.beats_per_minute = 140;
     song->data.length = 0.0;
     song->data.tracks = NULL;
-    mml_length_counter = 0;
+    sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
+    
     song->data.track_count = sb_count(song->data.tracks);
     song->data.tracks[0] = NULL;
     song->decode_state.track_pos = NULL;
@@ -760,6 +764,7 @@ drn_mml_t* drn_mml_open_mem(const char* buf)
     sb_add(song->decode_state.track_pos,song->data.track_count);
     for( i=0; i<sb_count(song->decode_state.track_pos); i++ )
         song->decode_state.track_pos[i] = 0;
+    
     
     return song;
 }

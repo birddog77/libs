@@ -7,9 +7,9 @@ l6 o3 q6
 // note sequence for first defined wave
 g a e f a+ b g a e f a+ b g a e f a+ b;
 
-l2 o2 q6
+l4 o2 q6
 
 // note sequence for second defined wave
-a a a a- a a;
+a a a a- a a a a a;
 
 
