@@ -515,14 +515,18 @@ const char* mml__read_file(const char* fn)
 
 void drn_mml_reset_decode_state(drn_mml_t* m)
 {
-    int i;
-    for( i=0; i<m->data.track_count; i++ )
-    {
-        /* zero track positions */
-        m->decode_state.track_pos[i] = 0;
-        /* set initial notes to 0 */
-        m->data.tracks[i][0].accum_time = 0.0;
-    }
+   int i,j;
+   for( i=0; i<m->data.track_count; i++ )
+   {
+      /* zero track positions */
+      m->decode_state.track_pos[i] = 0;
+      /* set initial notes to 0 */
+      int n = sb_count(m->data.tracks[i]);
+      for( j=0; j<n; j++ )
+      {
+         m->data.tracks[i][j].accum_time = 0.0;
+      }
+   }
     /* zero total track time */
     m->decode_state.accum_time = 0.0;
 }
@@ -543,7 +547,7 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt)
         drn_mml_reset_decode_state(m);
         m->decode_state.accum_time += dt;
     }
-    
+        
     for( i=0; i<m->data.track_count; ++i )
     {
         j = m->decode_state.track_pos[i];
@@ -620,11 +624,10 @@ drn_mml_t* drn_mml_open_mem(const char* buf)
     song->data.tracks = NULL;
     sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
     
-    song->data.track_count = sb_count(song->data.tracks);
-    song->data.tracks[0] = NULL;
+    song->data.track_count = 0;
     song->decode_state.track_pos = NULL;
     song->decode_state.accum_time = 0.0;
-    song->data.volume = 1.0;
+    song->data.volume = 0.0;
     song->data.waves = NULL;
     
     int wave_define = 1;
@@ -644,8 +647,8 @@ drn_mml_t* drn_mml_open_mem(const char* buf)
                song->data.track_count += 1;
                current_track = song->data.track_count - 1;
                
-               sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
                song->data.tracks[current_track] = NULL;
+               song->data.volume += 1.0;
                
                n = mml__get_num_modifier_s();
                sb_push(song->data.waves,mml__clamp(n,0,NUM_VOICES-1));
@@ -663,20 +666,21 @@ drn_mml_t* drn_mml_open_mem(const char* buf)
             break;
          case ';':   /* end current track and start new track */
          {
-             if( sb_count(song->data.tracks[current_track]) > 0 )
-             {
-                 sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
-                 song->data.tracks[song->data.track_count] = NULL;
-                 song->data.track_count = sb_count(song->data.tracks);
-                 mml_sequence_counter = mml_length_counter;
-                 song->data.volume += 1.0;
-             }
-          }
-             break;
+            current_track = (current_track+1)%sb_count(song->data.tracks);
+            if( song->data.length + mml_sequence_counter > mml_length_counter )
+            {
+               song->data.length += mml_sequence_counter;
+               mml_length_counter = song->data.length;
+            }
+            mml_sequence_counter = 0.0;
+         }
+            break;
          case 'l':   /* note length */
-             if( (n = mml__get_num_modifier_s()) > 0 )
-                 rs[current_track].note_length = 1.0/(double)n;
-             break;
+         {
+            if( (n = mml__get_num_modifier_s()) > 0 )
+               rs[current_track].note_length = 1.0/(double)n;
+         }
+            break;
          case 'o':   /* note octave */
              if( (n = mml__get_num_modifier_s()) != -1 )
                  rs[current_track].octave = mml__clamp(n,0,8);
