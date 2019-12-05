@@ -167,6 +167,7 @@ typedef enum {
     SQUARE_THREE_QUARTER,
     TRIANGLE,
     NOISE,
+    SINE,
     NUM_VOICES
 } VOICE;
 
@@ -182,7 +183,8 @@ static unsigned char mml_wavetable[NUM_VOICES][16] = {
     {15,15,15,15,15,15,15,15,0,0,0,0,0,0,0,0},              // square-half
     {15,15,15,15,15,15,15,15,15,15,15,15,0,0,0,0},          // square-three-quarter
     {0,2,4,6,9,11,13,15,15,13,11,9,6,4,2,0},                // triangle
-    {8,10,12,9,7,1,3,0,6,15,2,4,11,14,13,5}                 // noise
+    {8,10,12,9,7,1,3,0,6,15,2,4,11,14,13,5},                // noise
+    {0,1,3,5,9,12,13,15,15,13,12,9,5,3,1,0}                 // sine
 };
 
 static float mml_note_frequencies[108] = {
