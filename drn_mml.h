@@ -11,6 +11,7 @@
  *      library (https://github.com/nothings/stb)
 * 
 // Version History
+// 0.6  (2019-12-07)    Wave definitions, measure cycling
 // 0.4  (2018-05-04)    Initial release
 //
 //
@@ -584,10 +585,12 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt)
         {
             c = DRN_NOTE_LOOKUP(m->decode_state.accum_time,m->data.waves[i],n->frequency);
             
+            //~ if( fabs(c) > fabs(r) )
+               //~ r = c;
             r += (v*c);
         }
     }
-        
+    
     return r;
 }
 
