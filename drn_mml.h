@@ -182,7 +182,7 @@ enum {
 };
 
 static unsigned char mml_wavetable[NUM_VOICES][16] = {
-    {15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0},                    // square-one-eighth
+    {15, 15,   0, 0, 0, 0, 0, 0, 0, 0,    0,    0,    0,    0,    0,    0},                    // square-one-eighth
     {15,15,15,15,0,0,0,0,0,0,0,0,0,0,0,0},                  // square-quarter
     {15,15,15,15,15,15,15,15,0,0,0,0,0,0,0,0},              // square-half
     {15,15,15,15,15,15,15,15,15,15,15,15,0,0,0,0},          // square-three-quarter
@@ -193,19 +193,6 @@ static unsigned char mml_wavetable[NUM_VOICES][16] = {
     {0,5,11,15,11,5,1,7,8,1,5,11,15,12,7,1},                // chorus
     {0,5,11,15,15,15,15,15,15,15,15,15,15,12,7,1}           // bigdip
 };
-
-//~ static unsigned char mml_wavetable[NUM_VOICES][32] = {
-    //~ {31,31,31,31,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},   // square-one-eighth
-    //~ {31,31,31,31,31,31,31,31,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, // square-quarter
-    //~ {31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},  // square-half
-    //~ {31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,0,0,0,0,0,0,0,0},          // square-three-quarter
-    //~ {1,2,3,5,7,9,11,13,15,18,20,23,25,29,31,30,28,26,24,23,21,19,17,15,13,11,10,7,5,2},                // triangle
-    //~ {16,20,2,18,1,14,3,0,6,29,21,14,17,12,3,2,5,12,28,13,27,7,14,13,18,21,1},                // noise
-    //~ {16,19,22,24,27,29,30,31,31,31,29,28,26,23,20,17,14,11,8,5,3,2,0,0,0,1,2,4,7,9,12,15},                // sine
-    //~ {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31},                // sawtooth
-    //~ {0,3,6,12,17,25,30,31,30,25,22,16,11,5,2,14,2,5,11,16,22,26,30,31,29,22,11,3},                // chorus
-    //~ {0,3,6,12,17,25,30,31,30,31,30,29,28,31,30,29,30,31,29,28,30,31,30,31,29,22,11,3}           // bigdip
-//~ };
 
 static float mml_note_frequencies[108] = {
 	16.35 	,
@@ -338,7 +325,7 @@ static double mml_quant_values[9] =
 
 static const char* mml_buf = NULL;
 static unsigned int mml_index = 0;
-static double mml_length_counter = 0.0;
+//~ static double mml_length_counter = 0.0;
 static double mml_sequence_counter = 0.0;
 
 void mml__skipwhite_and_nums_s()
@@ -398,7 +385,6 @@ int mml__get_token_s()
             case 'w':
             case ';':   /* track finish     */
             case '/':   /* comment          */
-            case '[':   /* sequence         */
             case NULLCHAR:
                 return c;
                 break;
@@ -599,8 +585,6 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt)
         {
             c = DRN_NOTE_LOOKUP(m->decode_state.accum_time,m->data.waves[i],n->frequency);
             
-            //~ if( fabs(c) > fabs(r) )
-               //~ r = c;
             r += (v*c);
         }
     }
@@ -645,14 +629,14 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
     mml_buf = buf;
     mml_index = 0;
     
-    mml_length_counter = 0;
+    //~ mml_length_counter = 0;
     mml_sequence_counter = 0;
     
     drn_mml_t* song = (drn_mml_t*)malloc(sizeof(drn_mml_t));
     song->data.beats_per_minute = 140;
     song->data.length = 0.0;
     song->data.tracks = NULL;
-    sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
+    //~ sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
     
     song->data.track_count = 0;
     song->decode_state.track_pos = NULL;
@@ -678,7 +662,7 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
                song->data.track_count += 1;
                current_track = song->data.track_count - 1;
                
-               song->data.tracks[current_track] = NULL;
+               //~ song->data.tracks[current_track] = NULL;
                song->data.volume += 1.0;
                
                n = mml__get_num_modifier_s();
@@ -743,8 +727,10 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
                wave_define = 0;
                current_track = 0;
                mml_sequence_counter = 0.0;
-               mml_length_counter = 0.0;
                
+               sb_add(song->data.tracks,song->data.track_count);
+               for( i=0; i<song->data.track_count; i++ )
+                  song->data.tracks[i] = NULL;
             }
          
             m = mml__get_note_modifier_s();
@@ -791,8 +777,13 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
       }
    }
    
+   printf("song length: %f\n",song->data.length);
+   
    for( i=0; i<song->data.track_count; i++ )
    {
+      
+      printf("%d %f\n",i,ms_length[i]);
+      
       if( ms_length[i] < song->data.length )
       {
          mml_note_t rest;
