@@ -728,6 +728,7 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
                current_track = 0;
                mml_sequence_counter = 0.0;
                
+               /* allocate pointers for parallel tracks */
                sb_add(song->data.tracks,song->data.track_count);
                for( i=0; i<song->data.track_count; i++ )
                   song->data.tracks[i] = NULL;
