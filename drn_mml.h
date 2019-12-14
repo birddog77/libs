@@ -194,6 +194,19 @@ static unsigned char mml_wavetable[NUM_VOICES][16] = {
     {0,5,11,15,15,15,15,15,15,15,15,15,15,12,7,1}           // bigdip
 };
 
+//~ static unsigned char mml_wavetable[NUM_VOICES][32] = {
+    //~ {31,31,31,31,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},   // square-one-eighth
+    //~ {31,31,31,31,31,31,31,31,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, // square-quarter
+    //~ {31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},  // square-half
+    //~ {31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,31,0,0,0,0,0,0,0,0},          // square-three-quarter
+    //~ {1,2,3,5,7,9,11,13,15,18,20,23,25,29,31,30,28,26,24,23,21,19,17,15,13,11,10,7,5,2},                // triangle
+    //~ {16,20,2,18,1,14,3,0,6,29,21,14,17,12,3,2,5,12,28,13,27,7,14,13,18,21,1},                // noise
+    //~ {16,19,22,24,27,29,30,31,31,31,29,28,26,23,20,17,14,11,8,5,3,2,0,0,0,1,2,4,7,9,12,15},                // sine
+    //~ {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31},                // sawtooth
+    //~ {0,3,6,12,17,25,30,31,30,25,22,16,11,5,2,14,2,5,11,16,22,26,30,31,29,22,11,3},                // chorus
+    //~ {0,3,6,12,17,25,30,31,30,31,30,29,28,31,30,29,30,31,29,28,30,31,30,31,29,22,11,3}           // bigdip
+//~ };
+
 static float mml_note_frequencies[108] = {
 	16.35 	,
  	17.32 	,
@@ -309,6 +322,7 @@ static double mml_quant_values[9] =
     { 0.15, 0.25, 0.3, 0.45, 0.6, 0.75, 0.8, 0.9, 1.0 };
 
 #define NULLCHAR                '\0'
+#define BITS_PER_NOTE           15.0
 #define DRN_GET_DECIMAL(f)      (f-floor(f))
 #define DRN_PI                  3.14159265359
 #define DRN_PI_twice            DRN_PI*2.0
@@ -316,10 +330,10 @@ static double mml_quant_values[9] =
 #define DRN_PI_inv_twice        0.15915
 #define DRN_SQUARE(x)           (sin(x) > 0 ? 1.0 : -1.0)
 #define DRN_SAMPLE_WAVETABLE(t,voice,note) \
-        mml_wavetable[voice][(int)(roundf(15.f*DRN_GET_DECIMAL(note*t)))]
+        mml_wavetable[voice][(int)(roundf(BITS_PER_NOTE*DRN_GET_DECIMAL(note*t)))]
 #define DRN_NOTE_LOOKUP(t,voice,note) \
         (((double)(DRN_SAMPLE_WAVETABLE(t,voice,note)) \
-        / 15.0 ) * 2.0 - 1.0 ) * 0.90
+        / BITS_PER_NOTE ) * 2.0 - 1.0 ) * 0.90
 #define DRN_ONE_NOTE(t,note)    ( 0.99999*DRN_SQUARE(note*DRN_PI_twice*t) )
 
 static const char* mml_buf = NULL;
@@ -674,6 +688,7 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
                tmp.note_length = .25;
                tmp.hit_length = .75;
                tmp.octave = 4;
+               
                sb_push(rs,tmp);
                sb_push(ms_length,0.0);
             }
@@ -769,7 +784,29 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
    song->data.volume = 1.0/song->data.volume;
    song->data.length = 0.0;
    for( i=0; i<song->data.track_count; i++ )
-      song->data.length = fmax(ms_length[i],song->data.length);
+   {
+      if( ms_length[i] > song->data.length )
+      {
+         song->data.length = ms_length[i];
+      }
+   }
+   
+   for( i=0; i<song->data.track_count; i++ )
+   {
+      if( ms_length[i] < song->data.length )
+      {
+         mml_note_t rest;
+         rest.frequency = 0.0;
+         rest.length = song->data.length - ms_length[i];
+         rest.accum_time = 0.0;
+         
+         printf("added rest of length %f to track %d\n",rest.length,i);
+         
+         
+         sb_push(song->data.tracks[i],rest);
+      }
+   }
+   
       
    sb_add(song->decode_state.track_pos,song->data.track_count);
    for( i=0; i<sb_count(song->decode_state.track_pos); i++ )
