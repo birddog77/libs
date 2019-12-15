@@ -471,6 +471,40 @@ int mml__get_num_modifier_s()
         return -1;
 }
 
+double mml__get_note_length_s()
+{
+   int n,d;
+ 
+   n = mml__get_num_modifier_s();
+   
+   if(   mml_buf[mml_index] == '/' &&
+         mml_buf[mml_index+1] != '/' )
+   {  // slash present, treat n as a numerator
+      mml_index += 1;
+      d = mml__get_num_modifier_s();
+      if( n < 0 )
+      {  // no n, default to 1
+         return 1.0/(double)d;
+      }
+      else
+      {  // n and d present, return a fraction
+         printf("total %d %d %f\n",n,d,((double)n/(double)d));
+         return ((double)n/(double)d);
+      }
+   }
+   else
+   {  // no slash, n is a fraction
+      if( n < 0 )
+      {  // no n, use default note length
+         return -1.0;
+      }
+      else
+      {  // n present
+         return 1.0/(double)n;
+      }
+   }
+}
+
 NOTE mml__fetch_note(int note,int mod)
 {
     switch( note ) {
@@ -520,7 +554,7 @@ const char* mml__read_file(const char* fn,unsigned int* sz)
     string[fsize] = 0;
     
     
-    *sz = fsize+1;
+    *sz = fsize;
     
     return (const char*)string;
 }
@@ -650,6 +684,7 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
     
     int current_track = 0;
     int n,i,m;
+    double nl;
     
     /* main parser loop */
    while( mml_buf[mml_index] != NULLCHAR && mml_index < sz )
@@ -735,11 +770,11 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
          
             m = mml__get_note_modifier_s();
             i = mml__fetch_note(c,m);
-            n = mml__get_num_modifier_s();
+            nl = mml__get_note_length_s();
              
             mml_note_t note;
             note.frequency = (i == -1) ? 0.0 : mml_note_frequencies[12*rs[current_track].octave+i];
-            note.length = (n>0) ? 1.0/(double)n : rs[current_track].note_length;
+            note.length = ( nl < 0 ) ? rs[current_track].note_length : nl;
             
             mml_sequence_counter += note.length;
                          
