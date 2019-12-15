@@ -778,12 +778,10 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
       }
    }
    
-   printf("song length: %f\n",song->data.length);
    
    for( i=0; i<song->data.track_count; i++ )
    {
       
-      printf("%d %f\n",i,ms_length[i]);
       
       if( ms_length[i] < song->data.length )
       {
@@ -791,8 +789,6 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
          rest.frequency = 0.0;
          rest.length = song->data.length - ms_length[i];
          rest.accum_time = 0.0;
-         
-         printf("added rest of length %f to track %d\n",rest.length,i);
          
          
          sb_push(song->data.tracks[i],rest);
