@@ -170,8 +170,8 @@ typedef enum {
     NOISE,
     SINE,
     SAWTOOTH,
-    CHORUS,
-    BIGDIP,
+    //~ CHORUS,
+    //~ BIGDIP,
     NUM_VOICES
 } VOICE;
 
@@ -190,8 +190,8 @@ static unsigned char mml_wavetable[NUM_VOICES][16] = {
     {8,10,12,9,7,1,3,0,6,15,2,4,11,14,13,5},                // noise
     {0,1,3,5,9,12,13,15,15,13,12,9,5,3,1,0},                // sine
     {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15},                // sawtooth
-    {0,5,11,15,11,5,1,7,8,1,5,11,15,12,7,1},                // chorus
-    {0,5,11,15,15,15,15,15,15,15,15,15,15,12,7,1}           // bigdip
+    //~ {0,5,11,15,11,5,1,7,8,1,5,11,15,12,7,1},                // chorus
+    //~ {0,5,11,15,15,15,15,15,15,15,15,15,15,12,7,1}           // bigdip
 };
 
 static float mml_note_frequencies[108] = {
