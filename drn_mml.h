@@ -170,8 +170,8 @@ typedef enum {
     NOISE,
     SINE,
     SAWTOOTH,
-    CHORUS,
-    BIGDIP,
+    //~ CHORUS,
+    //~ BIGDIP,
     NUM_VOICES
 } VOICE;
 
@@ -190,8 +190,8 @@ static unsigned char mml_wavetable[NUM_VOICES][16] = {
     {8,10,12,9,7,1,3,0,6,15,2,4,11,14,13,5},                // noise
     {0,1,3,5,9,12,13,15,15,13,12,9,5,3,1,0},                // sine
     {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15},                // sawtooth
-    {0,5,11,15,11,5,1,7,8,1,5,11,15,12,7,1},                // chorus
-    {0,5,11,15,15,15,15,15,15,15,15,15,15,12,7,1}           // bigdip
+    //~ {0,5,11,15,11,5,1,7,8,1,5,11,15,12,7,1},                // chorus
+    //~ {0,5,11,15,15,15,15,15,15,15,15,15,15,12,7,1}           // bigdip
 };
 
 static float mml_note_frequencies[108] = {
@@ -763,6 +763,7 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
                current_track = 0;
                mml_sequence_counter = 0.0;
                
+               /* allocate pointers for parallel tracks */
                sb_add(song->data.tracks,song->data.track_count);
                for( i=0; i<song->data.track_count; i++ )
                   song->data.tracks[i] = NULL;
@@ -812,12 +813,10 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
       }
    }
    
-   printf("song length: %f\n",song->data.length);
    
    for( i=0; i<song->data.track_count; i++ )
    {
       
-      printf("%d %f\n",i,ms_length[i]);
       
       if( ms_length[i] < song->data.length )
       {
@@ -825,8 +824,6 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
          rest.frequency = 0.0;
          rest.length = song->data.length - ms_length[i];
          rest.accum_time = 0.0;
-         
-         printf("added rest of length %f to track %d\n",rest.length,i);
          
          
          sb_push(song->data.tracks[i],rest);
