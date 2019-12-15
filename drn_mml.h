@@ -718,11 +718,25 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
             break;
          case ';':   /* end current track and start new track */
          {
-            ms_length[current_track] += mml_sequence_counter;
-            mml_sequence_counter = 0.0;
-            
-            current_track += 1;
-            current_track %= song->data.track_count;
+            if( wave_define )
+            {  /* we finish defining waves and reset counters */
+               wave_define = 0;
+               current_track = 0;
+               mml_sequence_counter = 0.0;
+               
+               /* allocate pointers for parallel tracks */
+               sb_add(song->data.tracks,song->data.track_count);
+               for( i=0; i<song->data.track_count; i++ )
+                  song->data.tracks[i] = NULL;
+            }
+            else
+            {
+               ms_length[current_track] += mml_sequence_counter;
+               mml_sequence_counter = 0.0;
+               
+               current_track += 1;
+               current_track %= song->data.track_count;
+            }
          }
             break;
          case 'l':   /* note length */
@@ -757,18 +771,6 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
          case 'r':
          case 'p':
          {
-            if( wave_define )
-            {  /* at first note sequence, we finish defining waves and reset counters */
-               wave_define = 0;
-               current_track = 0;
-               mml_sequence_counter = 0.0;
-               
-               /* allocate pointers for parallel tracks */
-               sb_add(song->data.tracks,song->data.track_count);
-               for( i=0; i<song->data.track_count; i++ )
-                  song->data.tracks[i] = NULL;
-            }
-         
             m = mml__get_note_modifier_s();
             i = mml__fetch_note(c,m);
             nl = mml__get_note_length_s();
