@@ -781,8 +781,8 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
             
             mml_sequence_counter += note.length;
                          
-            rest_len = (1.0-rs[current_track].hit_length)*note.length;
-            note.length *= rs[current_track].hit_length;
+            rest_len = (1.0-rs[current_track].hit_length)*rs[current_track].note_length;
+            note.length -= rest_len;
             note.accum_time = 0.0;
             sb_push(song->data.tracks[current_track],note);
              
