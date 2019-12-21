@@ -32,27 +32,29 @@ extern "C" {
 typedef struct {
     double length;
     double accum_time;
+    double volume;
     float frequency;
 } mml_note_t;
 
 typedef struct {
-    float speed_multiplier;
     double accum_time;
+    float speed_multiplier;
     unsigned int * track_pos;
 } mml_decode_state_t;
 
 typedef struct {
-    unsigned int beats_per_minute;
     double length;
     double volume;
+    unsigned int beats_per_minute;
     unsigned int track_count;
-    unsigned int * waves;     // indexes into wavetable
+    unsigned int * waves;     /* indexes into wavetable */
     mml_note_t ** tracks;
 } mml_data_t;
 
 typedef struct {
     double note_length;                 /* default is .25   */
     double hit_length;                  /* default is .75   */
+    double volume;                      /* default is 1.0   */
     unsigned int octave;                /* default is 4     */
 } mml_read_state_t;
 
@@ -306,7 +308,7 @@ static float mml_note_frequencies[108] = {
 };
 
 static double mml_quant_values[9] = 
-    { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 1.0 };
+    { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 0.9, 1.0 };
 
 #define NULLCHAR                '\0'
 #define BITS_PER_NOTE           15.0
@@ -378,6 +380,7 @@ int mml__get_token_s()
             case 'r':
             case 'p':
             case 'o':   /* state mods --    */
+            case 'v':
             case 'l':
             case 'q':
             case '<':
@@ -584,7 +587,7 @@ void drn_mml_reset_decode_state(drn_mml_t* m)
 double drn_mml_decode_stream(drn_mml_t* m,double dt)
 {
     int i,j;
-    double r,v,c;
+    double r,v,vn,c;
     mml_note_t * n;
     r = 0.0;
     v = m->data.volume;
@@ -620,9 +623,10 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt)
         
         if( n->frequency )
         {
-            c = DRN_NOTE_LOOKUP(m->decode_state.accum_time,m->data.waves[i],n->frequency);
+           vn = n->volume;
+           c = DRN_NOTE_LOOKUP(m->decode_state.accum_time,m->data.waves[i],n->frequency);
             
-            r += (v*c);
+           r += (v*vn*c);
         }
     }
     
@@ -710,6 +714,7 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
                tmp.note_length = .25;
                tmp.hit_length = .75;
                tmp.octave = 4;
+               tmp.volume = 1.0;
                
                sb_push(rs,tmp);
                sb_push(ms_length,0.0);
@@ -754,6 +759,10 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
              if( (n = mml__get_num_modifier_s()) != -1 )
                  rs[current_track].octave = mml__clamp(n,0,8);
              break;
+         case 'v':   /* note volume modifier */
+            if( (n = mml__get_num_modifier_s()) != -1 )
+               rs[current_track].volume = mml_quant_values[mml__clamp(n,0,8)];
+            break;
          case '<':   /* octave shift up */
              rs[current_track].octave = mml__clamp(rs[current_track].octave+1,0,8);
              break;
@@ -791,6 +800,7 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
             
             note.length -= rest_len;
             note.accum_time = 0.0;
+            note.volume = rs[current_track].volume;
             sb_push(song->data.tracks[current_track],note);
              
             if(  rs[current_track].hit_length < 1.0 )
