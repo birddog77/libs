@@ -471,7 +471,7 @@ int mml__get_num_modifier_s()
         return -1;
 }
 
-double mml__get_note_length_s()
+double mml__get_note_length_s(int &ni)
 {
    int n,d;
  
@@ -484,11 +484,12 @@ double mml__get_note_length_s()
       d = mml__get_num_modifier_s();
       if( n < 0 )
       {  // no n, default to 1
+         ni = d;
          return 1.0/(double)d;
       }
       else
       {  // n and d present, return a fraction
-         printf("total %d %d %f\n",n,d,((double)n/(double)d));
+         ni = d;
          return ((double)n/(double)d);
       }
    }
@@ -496,10 +497,12 @@ double mml__get_note_length_s()
    {  // no slash, n is a fraction
       if( n < 0 )
       {  // no n, use default note length
+         ni = -1;
          return -1.0;
       }
       else
       {  // n present
+         ni = n;
          return 1.0/(double)n;
       }
    }
@@ -773,15 +776,19 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
          {
             m = mml__get_note_modifier_s();
             i = mml__fetch_note(c,m);
-            nl = mml__get_note_length_s();
+            nl = mml__get_note_length_s(n);
              
             mml_note_t note;
             note.frequency = (i == -1) ? 0.0 : mml_note_frequencies[12*rs[current_track].octave+i];
             note.length = ( nl < 0 ) ? rs[current_track].note_length : nl;
             
             mml_sequence_counter += note.length;
-                         
-            rest_len = (1.0-rs[current_track].hit_length)*rs[current_track].note_length;
+            
+            if( n > 0 )
+               rest_len = (1.0-rs[current_track].hit_length)*(1.0/(double)n);
+            else
+               rest_len = (1.0-rs[current_track].hit_length)*(rs[current_track].note_length);
+            
             note.length -= rest_len;
             note.accum_time = 0.0;
             sb_push(song->data.tracks[current_track],note);
