@@ -9,6 +9,8 @@ Library                               | Description
 
 
 # Notes
+Intended to be C89-compilable, but some libs may require C99.
+
 mml.h uses Sean Barrett's stretchy_buffer library
 (https://github.com/nothings/stb)
 
