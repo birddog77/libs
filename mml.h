@@ -172,8 +172,6 @@ typedef enum {
     NOISE,
     SINE,
     SAWTOOTH,
-    //~ CHORUS,
-    //~ BIGDIP,
     NUM_VOICES
 } VOICE;
 
@@ -184,14 +182,14 @@ enum {
 };
 
 static unsigned char mml_wavetable[NUM_VOICES][16] = {
-    {15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0},                    // square-one-eighth
-    {15,15,15,15,0,0,0,0,0,0,0,0,0,0,0,0},                  // square-quarter
-    {15,15,15,15,15,15,15,15,0,0,0,0,0,0,0,0},              // square-half
-    {15,15,15,15,15,15,15,15,15,15,15,15,0,0,0,0},          // square-three-quarter
-    {2,4,6,8,10,12,14,15,13,11,9,7,5,3,1,0},                // triangle
-    {8,10,12,9,7,1,3,0,6,15,2,4,11,14,13,5},                // noise
-    {0,1,3,5,9,12,13,15,15,13,12,9,5,3,1,0},                // sine
-    {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15},                // sawtooth
+    {15,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0},                    /* square-one-eighth */
+    {15,15,15,15,0,0,0,0,0,0,0,0,0,0,0,0},                  /* square-quarter */
+    {15,15,15,15,15,15,15,15,0,0,0,0,0,0,0,0},              /* square-half */
+    {15,15,15,15,15,15,15,15,15,15,15,15,0,0,0,0},          /* square-three-quarter */
+    {2,4,6,8,10,12,14,15,13,11,9,7,5,3,1,0},                /* triangle */
+    {8,10,12,9,7,1,3,0,6,15,2,4,11,14,13,5},                /* noise */
+    {0,1,3,5,9,12,13,15,15,13,12,9,5,3,1,0},                /* sine */
+    {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15},                /* sawtooth */
 };
 
 static float mml_note_frequencies[108] = {
@@ -311,21 +309,19 @@ static double mml_quant_values[9] =
 #define NULLCHAR                '\0'
 #define BITS_PER_NOTE           15.0
 #define GET_DECIMAL(f)      (f-floor(f))
-#define PI                  3.14159265359
-#define PI_twice            PI*2.0
-#define PI_inv              0.31831
-#define PI_inv_twice        0.15915
-#define SQUARE(x)           (sin(x) > 0 ? 1.0 : -1.0)
+#define MML_PI                  3.14159265359
+#define MML_PI_twice            MML_PI*2.0
+#define MML_PI_inv              0.31831
+#define MML_PI_inv_twice        0.15915
 #define SAMPLE_WAVETABLE(t,voice,note) \
         mml_wavetable[voice][(int)(roundf(BITS_PER_NOTE*GET_DECIMAL(note*t)))]
 #define NOTE_LOOKUP(t,voice,note) \
         (((double)(SAMPLE_WAVETABLE(t,voice,note)) \
         / BITS_PER_NOTE ) * 2.0 - 1.0 ) * 0.90
-#define ONE_NOTE(t,note)    ( 0.99999*SQUARE(note*PI_twice*t) )
+#define ONE_NOTE(t,note)    ( 0.99999*SQUARE(note*MML_PI_twice*t) )
 
 static const char* mml_buf = NULL;
 static unsigned int mml_index = 0;
-//~ static double mml_length_counter = 0.0;
 static double mml_sequence_counter = 0.0;
 
 void mml__skipwhite_and_nums_s()
@@ -480,29 +476,29 @@ double mml__get_note_length_s(int &ni)
    
    if(   mml_buf[mml_index] == '/' &&
          mml_buf[mml_index+1] != '/' )
-   {  // slash present, treat n as a numerator
+   {  /* slash present, treat n as a numerator */
       mml_index += 1;
       d = mml__get_num_modifier_s();
       if( n < 0 )
-      {  // no n, default to 1
+      {  /* no n, default to 1 */
          ni = d;
          return 1.0/(double)d;
       }
       else
-      {  // n and d present, return a fraction
+      {  /* n and d present, return a fraction */
          ni = d;
          return ((double)n/(double)d);
       }
    }
    else
-   {  // no slash, n is a fraction
+   {  /* no slash, n is a fraction */
       if( n < 0 )
-      {  // no n, use default note length
+      {  /* no n, use default note length */
          ni = -1;
          return -1.0;
       }
       else
-      {  // n present
+      {  /* n present */
          ni = n;
          return 1.0/(double)n;
       }
@@ -668,14 +664,12 @@ mml_t* mml_open_mem(const char* buf,unsigned int sz)
     mml_buf = buf;
     mml_index = 0;
     
-    //~ mml_length_counter = 0;
     mml_sequence_counter = 0;
     
     mml_t* song = (mml_t*)malloc(sizeof(mml_t));
     song->data.beats_per_minute = 140;
     song->data.length = 0.0;
     song->data.tracks = NULL;
-    //~ sb_push(song->data.tracks,(mml_note_t*)malloc(sizeof(mml_note_t*)));
     
     song->data.track_count = 0;
     song->decode_state.track_pos = NULL;
@@ -702,7 +696,6 @@ mml_t* mml_open_mem(const char* buf,unsigned int sz)
                song->data.track_count += 1;
                current_track = song->data.track_count - 1;
                
-               //~ song->data.tracks[current_track] = NULL;
                song->data.volume += 1.0;
                
                n = mml__get_num_modifier_s();
