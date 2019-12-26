@@ -1,15 +1,15 @@
-# drn_libs
+# libs
 single-file public domain libraries in c/c++
 
 Library                               | Description
 --------------------------------------| -----------
-[drn_misc]  (drn_misc.h)              | some misc math and file functions
-[drn_mml]   (drn_mml.h)               | MML (Music Macro Language) parser and decoder
-[drn_pois]  (drn_pois.h)              | generates Poisson-ish random data
+[misc]  (misc.h)              | some misc math and file functions
+[mml]   (mml.h)               | MML (Music Macro Language) parser and decoder
+[pois]  (pois.h)              | generates Poisson-ish random data
 
 
 # Notes
-drn_mml.h uses Sean Barrett's stretchy_buffer library
+mml.h uses Sean Barrett's stretchy_buffer library
 (https://github.com/nothings/stb)
 
 For more info on Music Macro Language:

@@ -1,6 +1,6 @@
 
-#ifndef __INCLUDED__DRN_POIS_H__
-#define __INCLUDED__DRN_POIS_H__
+#ifndef __INCLUDED__POIS_H__
+#define __INCLUDED__POIS_H__
 
 
 #ifdef __cplusplus
@@ -25,16 +25,16 @@ typedef struct {
 /*
  * Generates a uniform random point normalized over the input space
  * */
-POIS_POINT1 drn_generate_uniform_point1(int space);
-POIS_POINT2 drn_generate_uniform_point2(int space);
-POIS_POINT3 drn_generate_uniform_point3(int space);
+POIS_POINT1 generate_uniform_point1(int space);
+POIS_POINT2 generate_uniform_point2(int space);
+POIS_POINT3 generate_uniform_point3(int space);
 
 /*
  * Generates a zero (0,0) point
  * */
-POIS_POINT1 drn_generate_zero_point1();
-POIS_POINT2 drn_generate_zero_point2();
-POIS_POINT3 drn_generate_zero_point3();
+POIS_POINT1 generate_zero_point1();
+POIS_POINT2 generate_zero_point2();
+POIS_POINT3 generate_zero_point3();
 
 
 
@@ -44,10 +44,10 @@ POIS_POINT3 drn_generate_zero_point3();
  *  - for in-place version, the size of the buffer should be input in
  *    num_samples
  * */
-POIS_POINT1 * drn_poisson_line(    int * num_samples,
+POIS_POINT1 * poisson_line(    int * num_samples,
                                     int space_size,
                                     float separation            );
-void drn_poisson_line_in_place(    POIS_POINT1 * data,
+void poisson_line_in_place(    POIS_POINT1 * data,
                                     int * num_samples,
                                     int space_size,
                                     float separation            );
@@ -59,10 +59,10 @@ void drn_poisson_line_in_place(    POIS_POINT1 * data,
  *  - for in-place version, the size of the buffer should be input in
  *    num_samples
  * */
-POIS_POINT2 * drn_poisson_plane(    int * num_samples,
+POIS_POINT2 * poisson_plane(    int * num_samples,
                                     int space_size,
                                     float separation            );
-void drn_poisson_plane_in_place(    POIS_POINT2 * data,
+void poisson_plane_in_place(    POIS_POINT2 * data,
                                     int * num_samples,
                                     int space_size,
                                     float separation            );
@@ -73,40 +73,40 @@ void drn_poisson_plane_in_place(    POIS_POINT2 * data,
  *  - for in-place version, the size of the buffer should be input in
  *    num_samples
  * */
-POIS_POINT2 * drn_poisson_disk( int * num_samples,
+POIS_POINT2 * poisson_disk( int * num_samples,
                                 int space_radius,
                                 float separation            );
-void drn_poisson_disk_in_place( POIS_POINT2 * data,
+void poisson_disk_in_place( POIS_POINT2 * data,
                                 int * num_samples,
                                 int space_radius,
                                 float separation            );
 
 /*
  * Generates Poisson-distributed points in a cube of the given size
- *  - 3D version of drn_poisson_plane
+ *  - 3D version of poisson_plane
  *  - the number of samples generated is returned in num_samples
  *  - for in-place version, the size of the buffer should be input in
  *    num_samples
  * */
-POIS_POINT3 * drn_poisson_box(  int * num_samples,
+POIS_POINT3 * poisson_box(  int * num_samples,
                                 int space_size,
                                 float separation            );
-void drn_poisson_box_in_place(  POIS_POINT3 * data,
+void poisson_box_in_place(  POIS_POINT3 * data,
                                 int * num_samples,
                                 int space_size,
                                 float separation            );
 
 /*
  * Generates Poisson-distributed points in a zero-centered sphere
- *  - 3D version of drn_poisson_disk
+ *  - 3D version of poisson_disk
  *  - the number of samples generated is returned in num_samples
  *  - for in-place version, the size of the buffer should be input in
  *    num_samples
  * */
-POIS_POINT3 * drn_poisson_sphere(   int * num_samples,
+POIS_POINT3 * poisson_sphere(   int * num_samples,
                                     int space_size,
                                     float separation            );
-void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
+void poisson_sphere_in_place(   POIS_POINT3 * data,
                                     int * num_samples,
                                     int space_size,
                                     float separation            );
@@ -116,7 +116,7 @@ void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
 #endif
 
 
-#endif /* __INCLUDED__DRN_POIS_H__ */
+#endif /* __INCLUDED__POIS_H__ */
 
 
 
@@ -124,7 +124,7 @@ void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
  *          IMPLEMENTATION          ********************
  *                                  ********************
  * */
-#ifdef DRN_POIS_IMPLEMENTATION
+#ifdef POIS_IMPLEMENTATION
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
@@ -137,20 +137,20 @@ void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
 #define POIS_RAND() ((float)rand()/(float)RAND_MAX)
 #endif
 
-#define DRN_PI                3.14159265359
-#define DRN_PI_quarter        0.7853981634
-#define DRN_PI_quarter_sine   0.7071067812
-#define DRN_k 30
+#define POIS_PI                3.14159265359
+#define POIS_PI_quarter        0.7853981634
+#define POIS_PI_quarter_sine   0.7071067812
+#define POIS_k 30
 
 
-POIS_POINT1 drn_generate_uniform_point1(int space_size)
+POIS_POINT1 generate_uniform_point1(int space_size)
 {
     POIS_POINT1 p;
     p.x = POIS_RAND() * space_size;
     return p;
 }
 
-POIS_POINT2 drn_generate_uniform_point2(int space_size)
+POIS_POINT2 generate_uniform_point2(int space_size)
 {
     POIS_POINT2 p;
     p.x = POIS_RAND() * space_size;
@@ -158,7 +158,7 @@ POIS_POINT2 drn_generate_uniform_point2(int space_size)
     return p;
 }
 
-POIS_POINT3 drn_generate_uniform_point3(int space_size)
+POIS_POINT3 generate_uniform_point3(int space_size)
 {
     POIS_POINT3 p;
     p.x = POIS_RAND() * space_size;
@@ -167,14 +167,14 @@ POIS_POINT3 drn_generate_uniform_point3(int space_size)
     return p;
 }
 
-POIS_POINT1 drn_generate_zero_point1()
+POIS_POINT1 generate_zero_point1()
 {
     POIS_POINT1 p;
     p.x = 0.f;
     return p;
 }
 
-POIS_POINT2 drn_generate_zero_point2()
+POIS_POINT2 generate_zero_point2()
 {
     POIS_POINT2 p;
     p.x = 0.f;
@@ -182,7 +182,7 @@ POIS_POINT2 drn_generate_zero_point2()
     return p;
 }
 
-POIS_POINT3 drn_generate_zero_point3()
+POIS_POINT3 generate_zero_point3()
 {
     POIS_POINT3 p;
     p.x = 0.f;
@@ -191,7 +191,7 @@ POIS_POINT3 drn_generate_zero_point3()
     return p;
 }
 
-POIS_POINT1 drn__generate_radial_point1(POIS_POINT1 p,float r)
+POIS_POINT1 pois__generate_radial_point1(POIS_POINT1 p,float r)
 {
    float f = POIS_RAND()*2.f - 1.f;
    float radius = r*f;
@@ -202,9 +202,9 @@ POIS_POINT1 drn__generate_radial_point1(POIS_POINT1 p,float r)
    return result;
 }
 
-POIS_POINT2 drn__generate_radial_point2(POIS_POINT2 p,float r)
+POIS_POINT2 pois__generate_radial_point2(POIS_POINT2 p,float r)
 {
-   float theta = POIS_RAND() * DRN_PI * 2.f;
+   float theta = POIS_RAND() * POIS_PI * 2.f;
    float radius = r + POIS_RAND()*r;
 
    float x_run = radius * cos(theta);
@@ -216,10 +216,10 @@ POIS_POINT2 drn__generate_radial_point2(POIS_POINT2 p,float r)
    return result;
 }
 
-POIS_POINT3 drn__generate_radial_point3(POIS_POINT3 p,float r)
+POIS_POINT3 pois__generate_radial_point3(POIS_POINT3 p,float r)
 {
-   float phi = POIS_RAND() * DRN_PI;
-   float theta = POIS_RAND() * DRN_PI * 2.f;
+   float phi = POIS_RAND() * POIS_PI;
+   float theta = POIS_RAND() * POIS_PI * 2.f;
    float radius = r + POIS_RAND()*r;
 
    float x_run = radius * sin(theta) * cos(phi);
@@ -233,7 +233,7 @@ POIS_POINT3 drn__generate_radial_point3(POIS_POINT3 p,float r)
    return result;
 }
 
-int drn__clamp(int x,int min,int max) 
+int pois__clamp(int x,int min,int max) 
 {
    int res;
 
@@ -247,14 +247,14 @@ int drn__clamp(int x,int min,int max)
    return res;
 }
 
-float drn__get_dist1(POIS_POINT1* p0, POIS_POINT1* p1)
+float pois__get_dist1(POIS_POINT1* p0, POIS_POINT1* p1)
 {
    float dist;
    dist = abs(p1->x - p0->x);
    return dist;
 }
 
-float drn__get_dist2(POIS_POINT2* p0, POIS_POINT2* p1)
+float pois__get_dist2(POIS_POINT2* p0, POIS_POINT2* p1)
 {
    float dist;
    dist = sqrtf(  powf(p1->x - p0->x,2.f) +
@@ -262,7 +262,7 @@ float drn__get_dist2(POIS_POINT2* p0, POIS_POINT2* p1)
    return dist;
 }
 
-float drn__get_dist3(POIS_POINT3* p0, POIS_POINT3* p1)
+float pois__get_dist3(POIS_POINT3* p0, POIS_POINT3* p1)
 {
    float dist;
    dist = sqrtf(  powf(p1->x - p0->x,2.f) +
@@ -271,14 +271,14 @@ float drn__get_dist3(POIS_POINT3* p0, POIS_POINT3* p1)
    return dist;
 }
 
-int drn__check_bounds_line(POIS_POINT1 p,int space_size)
+int pois__check_bounds_line(POIS_POINT1 p,int space_size)
 {
    int res;
    res =   (p.x > 0.f && p.x < space_size);
    return res;
 }
 
-int drn__check_bounds_plane(POIS_POINT2 p,int space_size)
+int pois__check_bounds_plane(POIS_POINT2 p,int space_size)
 {
    int res;
    res =    (p.x > 0.f && p.x < space_size) &&
@@ -286,7 +286,7 @@ int drn__check_bounds_plane(POIS_POINT2 p,int space_size)
    return res;
 }
 
-int drn__check_bounds_box(POIS_POINT3 p,int space_size)
+int pois__check_bounds_box(POIS_POINT3 p,int space_size)
 {
    int res;
    res =    (p.x > 0.f && p.x < space_size) &&
@@ -295,25 +295,25 @@ int drn__check_bounds_box(POIS_POINT3 p,int space_size)
    return res;
 }
 
-int drn__check_bounds_disk(POIS_POINT2 p,int radius)
+int pois__check_bounds_disk(POIS_POINT2 p,int radius)
 {
-   POIS_POINT2 zp = drn_generate_zero_point2();
-   float dist = drn__get_dist2(&p,&zp);
+   POIS_POINT2 zp = generate_zero_point2();
+   float dist = pois__get_dist2(&p,&zp);
 
    int res = (dist < radius);
    return res;
 }
 
-int drn__check_bounds_sphere(POIS_POINT3 p,int radius)
+int pois__check_bounds_sphere(POIS_POINT3 p,int radius)
 {
-   POIS_POINT3 zp = drn_generate_zero_point3();
-   float dist = drn__get_dist3(&p,&zp);
+   POIS_POINT3 zp = generate_zero_point3();
+   float dist = pois__get_dist3(&p,&zp);
 
    int res = (dist < radius);
    return res;
 }
 
-int drn__check_bg_grid3(   POIS_POINT3 p,
+int pois__check_bg_grid3(   POIS_POINT3 p,
                            POIS_POINT3* points,
                            int* bg_grid,
                            int grid_size,
@@ -328,12 +328,12 @@ int drn__check_bg_grid3(   POIS_POINT3 p,
         return 0;
     }
     
-    int startx = drn__clamp((int)(floor(p.x/unit_size)-2),0,grid_size-1);
-    int starty = drn__clamp((int)(floor(p.y/unit_size)-2),0,grid_size-1);
-    int startz = drn__clamp((int)(floor(p.z/unit_size)-2),0,grid_size-1);
-    int endx = drn__clamp((int)(ceil(p.x/unit_size)+2),0,grid_size-1);
-    int endy = drn__clamp((int)(ceil(p.y/unit_size)+2),0,grid_size-1);
-    int endz = drn__clamp((int)(ceil(p.z/unit_size)+2),0,grid_size-1);
+    int startx = pois__clamp((int)(floor(p.x/unit_size)-2),0,grid_size-1);
+    int starty = pois__clamp((int)(floor(p.y/unit_size)-2),0,grid_size-1);
+    int startz = pois__clamp((int)(floor(p.z/unit_size)-2),0,grid_size-1);
+    int endx = pois__clamp((int)(ceil(p.x/unit_size)+2),0,grid_size-1);
+    int endy = pois__clamp((int)(ceil(p.y/unit_size)+2),0,grid_size-1);
+    int endz = pois__clamp((int)(ceil(p.z/unit_size)+2),0,grid_size-1);
     int ind;
     float dist;
     
@@ -343,14 +343,14 @@ int drn__check_bg_grid3(   POIS_POINT3 p,
         for( int y=starty; y<=endy; ++y ) {
             for( int x=startx; x<=endx; ++x )
             {
-                ind = drn__clamp(   z*grid_size*grid_size+
+                ind = pois__clamp(   z*grid_size*grid_size+
                                     y*grid_size+x,
                                     0,grid_size*grid_size-1);
 
                 if( bg_grid[ind] >= 0 )
                 {
                     p1 = points[bg_grid[ind]];
-                    dist = drn__get_dist3(&p1,&p);
+                    dist = pois__get_dist3(&p1,&p);
                     if( dist < radius )
                     {
                         return 0;
@@ -364,7 +364,7 @@ int drn__check_bg_grid3(   POIS_POINT3 p,
 }
 
 
-int drn__check_bg_grid2(    POIS_POINT2 p,
+int pois__check_bg_grid2(    POIS_POINT2 p,
                             POIS_POINT2* points,
                             int* bg_grid,
                             int grid_size,
@@ -377,10 +377,10 @@ int drn__check_bg_grid2(    POIS_POINT2 p,
         return 0;
     }
     
-    int startx = drn__clamp((int)(floor(p.x/unit_size)-2),0,grid_size-1);
-    int starty = drn__clamp((int)(floor(p.y/unit_size)-2),0,grid_size-1);
-    int endx = drn__clamp((int)(ceil(p.x/unit_size)+2),0,grid_size-1);
-    int endy = drn__clamp((int)(ceil(p.y/unit_size)+2),0,grid_size-1);
+    int startx = pois__clamp((int)(floor(p.x/unit_size)-2),0,grid_size-1);
+    int starty = pois__clamp((int)(floor(p.y/unit_size)-2),0,grid_size-1);
+    int endx = pois__clamp((int)(ceil(p.x/unit_size)+2),0,grid_size-1);
+    int endy = pois__clamp((int)(ceil(p.y/unit_size)+2),0,grid_size-1);
     int ind;
     float dist;
     
@@ -389,12 +389,12 @@ int drn__check_bg_grid2(    POIS_POINT2 p,
     for( int y=starty; y<=endy; ++y ) {
         for( int x=startx; x<=endx; ++x )
         {
-            ind = drn__clamp(y*grid_size+x,0,grid_size*grid_size-1);
+            ind = pois__clamp(y*grid_size+x,0,grid_size*grid_size-1);
 
             if( bg_grid[ind] >= 0 )
             {
                 p1 = points[bg_grid[ind]];
-                dist = drn__get_dist2(&p1,&p);
+                dist = pois__get_dist2(&p1,&p);
                 if( dist < radius )
                 {
                     return 0;
@@ -406,7 +406,7 @@ int drn__check_bg_grid2(    POIS_POINT2 p,
     return 1;
 }
 
-int drn__check_bg_grid1(    POIS_POINT1 p,
+int pois__check_bg_grid1(    POIS_POINT1 p,
                             POIS_POINT1* points,
                             int* bg_grid,
                             int grid_size,
@@ -419,8 +419,8 @@ int drn__check_bg_grid1(    POIS_POINT1 p,
       return 0;
    }
 
-   int startx = drn__clamp((int)(floor(p.x/unit_size)-2),0,grid_size-1);
-   int endx = drn__clamp((int)(ceil(p.x/unit_size)+2),0,grid_size-1);
+   int startx = pois__clamp((int)(floor(p.x/unit_size)-2),0,grid_size-1);
+   int endx = pois__clamp((int)(ceil(p.x/unit_size)+2),0,grid_size-1);
    int ind;
    float dist;
 
@@ -428,12 +428,12 @@ int drn__check_bg_grid1(    POIS_POINT1 p,
     
    for( int x=startx; x<=endx; ++x )
    {
-      ind = drn__clamp(x,0,grid_size-1);
+      ind = pois__clamp(x,0,grid_size-1);
 
       if( bg_grid[ind] >= 0 )
       {
          p1 = points[bg_grid[ind]];
-         dist = drn__get_dist1(&p1,&p);
+         dist = pois__get_dist1(&p1,&p);
          if( dist < radius )
          {
             return 0;
@@ -444,7 +444,7 @@ int drn__check_bg_grid1(    POIS_POINT1 p,
    return 1;
 }
 
-void drn_poisson_box_in_place(  POIS_POINT3 * data,
+void poisson_box_in_place(  POIS_POINT3 * data,
                                 int * num_samples,
                                 int space_size,
                                 float separation            )
@@ -455,7 +455,7 @@ void drn_poisson_box_in_place(  POIS_POINT3 * data,
     int active_ind;
     
     // find unit size of a cell
-    float unit_sz = separation * DRN_PI_quarter_sine;
+    float unit_sz = separation * POIS_PI_quarter_sine;
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT3 p,pk;
     
@@ -470,7 +470,7 @@ void drn_poisson_box_in_place(  POIS_POINT3 * data,
         bg_grid[i] = -1;
         
     // emit initial point
-    p = drn_generate_uniform_point3(space_size);
+    p = generate_uniform_point3(space_size);
     data[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(    floor(p.z/unit_sz)*grid_dim*grid_dim +
@@ -489,10 +489,10 @@ void drn_poisson_box_in_place(  POIS_POINT3 * data,
         while(1)
         {
             c += 1;
-            pk = drn__generate_radial_point3(p,separation);
+            pk = pois__generate_radial_point3(p,separation);
             
-            if( drn__check_bounds_box(pk,space_size) &&
-                drn__check_bg_grid3(pk,data,bg_grid,grid_dim,unit_sz,separation) )
+            if( pois__check_bounds_box(pk,space_size) &&
+                pois__check_bg_grid3(pk,data,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 data[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
@@ -503,7 +503,7 @@ void drn_poisson_box_in_place(  POIS_POINT3 * data,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == DRN_k )
+            else if( c == POIS_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
@@ -520,7 +520,7 @@ void drn_poisson_box_in_place(  POIS_POINT3 * data,
 }
 
 
-POIS_POINT3 * drn_poisson_box(      int * num_samples,
+POIS_POINT3 * poisson_box(      int * num_samples,
                                     int space_size,
                                     float separation            )
 {
@@ -528,7 +528,7 @@ POIS_POINT3 * drn_poisson_box(      int * num_samples,
     int active_ind;
     
     // find unit size of a cell
-    float unit_sz = separation * DRN_PI_quarter_sine;
+    float unit_sz = separation * POIS_PI_quarter_sine;
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT3 p,pk;
     
@@ -544,7 +544,7 @@ POIS_POINT3 * drn_poisson_box(      int * num_samples,
         bg_grid[i] = -1;
         
     // emit initial point
-    p = drn_generate_uniform_point3(space_size);
+    p = generate_uniform_point3(space_size);
     point_list[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(    floor(p.z/unit_sz)*grid_dim*grid_dim +
@@ -563,10 +563,10 @@ POIS_POINT3 * drn_poisson_box(      int * num_samples,
         while(1)
         {
             c += 1;
-            pk = drn__generate_radial_point3(p,separation);
+            pk = pois__generate_radial_point3(p,separation);
             
-            if( drn__check_bounds_box(pk,space_size) &&
-                drn__check_bg_grid3(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
+            if( pois__check_bounds_box(pk,space_size) &&
+                pois__check_bg_grid3(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 point_list[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
@@ -577,7 +577,7 @@ POIS_POINT3 * drn_poisson_box(      int * num_samples,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == DRN_k )
+            else if( c == POIS_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
@@ -597,7 +597,7 @@ POIS_POINT3 * drn_poisson_box(      int * num_samples,
 
 
 
-POIS_POINT1 * drn_poisson_line(    int * num_samples,
+POIS_POINT1 * poisson_line(    int * num_samples,
                                     int space_size,
                                     float separation            )
 {
@@ -605,7 +605,7 @@ POIS_POINT1 * drn_poisson_line(    int * num_samples,
     int active_ind;
     
     // find unit size of a cell
-    float unit_sz = separation * DRN_PI_quarter_sine;
+    float unit_sz = separation * POIS_PI_quarter_sine;
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT1 p,pk;
     
@@ -621,7 +621,7 @@ POIS_POINT1 * drn_poisson_line(    int * num_samples,
         bg_grid[i] = -1;
         
     // emit initial point
-    p = drn_generate_uniform_point1(space_size);
+    p = generate_uniform_point1(space_size);
     point_list[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(floor(p.x/unit_sz));
@@ -638,10 +638,10 @@ POIS_POINT1 * drn_poisson_line(    int * num_samples,
         while(1)
         {
             c += 1;
-            pk = drn__generate_radial_point1(p,separation);
+            pk = pois__generate_radial_point1(p,separation);
             
-            if( drn__check_bounds_line(pk,space_size) &&
-                drn__check_bg_grid1(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
+            if( pois__check_bounds_line(pk,space_size) &&
+                pois__check_bg_grid1(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 point_list[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
@@ -650,7 +650,7 @@ POIS_POINT1 * drn_poisson_line(    int * num_samples,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == DRN_k )
+            else if( c == POIS_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
@@ -668,7 +668,7 @@ POIS_POINT1 * drn_poisson_line(    int * num_samples,
     return point_list;
 }
 
-void drn_poisson_line_in_place(    POIS_POINT1 * data,
+void poisson_line_in_place(    POIS_POINT1 * data,
                                     int * num_samples,
                                     int space_size,
                                     float separation            )
@@ -679,7 +679,7 @@ void drn_poisson_line_in_place(    POIS_POINT1 * data,
     int active_ind;
     
     // find unit size of a cell
-    float unit_sz = separation * DRN_PI_quarter_sine;
+    float unit_sz = separation * POIS_PI_quarter_sine;
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT1 p,pk;
     
@@ -694,7 +694,7 @@ void drn_poisson_line_in_place(    POIS_POINT1 * data,
         bg_grid[i] = -1;
         
     // emit initial point
-    p = drn_generate_uniform_point1(space_size);
+    p = generate_uniform_point1(space_size);
     data[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(floor(p.x/unit_sz));
@@ -711,10 +711,10 @@ void drn_poisson_line_in_place(    POIS_POINT1 * data,
         while(1)
         {
             c += 1;
-            pk = drn__generate_radial_point1(p,separation);
+            pk = pois__generate_radial_point1(p,separation);
             
-            if( drn__check_bounds_line(pk,space_size) &&
-                drn__check_bg_grid1(pk,data,bg_grid,grid_dim,unit_sz,separation) )
+            if( pois__check_bounds_line(pk,space_size) &&
+                pois__check_bg_grid1(pk,data,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 data[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
@@ -723,7 +723,7 @@ void drn_poisson_line_in_place(    POIS_POINT1 * data,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == DRN_k )
+            else if( c == POIS_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
@@ -740,7 +740,7 @@ void drn_poisson_line_in_place(    POIS_POINT1 * data,
 
 
 
-POIS_POINT2 * drn_poisson_plane( int * num_samples,
+POIS_POINT2 * poisson_plane( int * num_samples,
                                  int space_size,
                                  float separation     )
 {
@@ -748,7 +748,7 @@ POIS_POINT2 * drn_poisson_plane( int * num_samples,
     int active_ind;
     
     // find unit size of a cell
-    float unit_sz = separation * DRN_PI_quarter_sine;
+    float unit_sz = separation * POIS_PI_quarter_sine;
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT2 p,pk;
     
@@ -764,7 +764,7 @@ POIS_POINT2 * drn_poisson_plane( int * num_samples,
         bg_grid[i] = -1;
         
     // emit initial point
-    p = drn_generate_uniform_point2(space_size);
+    p = generate_uniform_point2(space_size);
     point_list[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(floor(p.y/unit_sz)*grid_dim+floor(p.x/unit_sz));
@@ -781,10 +781,10 @@ POIS_POINT2 * drn_poisson_plane( int * num_samples,
         while(1)
         {
             c += 1;
-            pk = drn__generate_radial_point2(p,separation);
+            pk = pois__generate_radial_point2(p,separation);
             
-            if( drn__check_bounds_plane(pk,space_size) &&
-                drn__check_bg_grid2(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
+            if( pois__check_bounds_plane(pk,space_size) &&
+                pois__check_bg_grid2(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 point_list[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
@@ -793,7 +793,7 @@ POIS_POINT2 * drn_poisson_plane( int * num_samples,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == DRN_k )
+            else if( c == POIS_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
@@ -811,7 +811,7 @@ POIS_POINT2 * drn_poisson_plane( int * num_samples,
     return point_list;
 }
 
-void drn_poisson_plane_in_place(    POIS_POINT2 * data,
+void poisson_plane_in_place(    POIS_POINT2 * data,
                                     int * num_samples,
                                     int space_size,
                                     float separation            )
@@ -822,7 +822,7 @@ void drn_poisson_plane_in_place(    POIS_POINT2 * data,
     int active_ind;
     
     // find unit size of a cell
-    float unit_sz = separation * DRN_PI_quarter_sine;
+    float unit_sz = separation * POIS_PI_quarter_sine;
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT2 p,pk;
     
@@ -837,7 +837,7 @@ void drn_poisson_plane_in_place(    POIS_POINT2 * data,
         bg_grid[i] = -1;
         
     // emit initial point
-    p = drn_generate_uniform_point2(space_size);
+    p = generate_uniform_point2(space_size);
     data[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(floor(p.y/unit_sz)*grid_dim+floor(p.x/unit_sz));
@@ -854,10 +854,10 @@ void drn_poisson_plane_in_place(    POIS_POINT2 * data,
         while(1)
         {
             c += 1;
-            pk = drn__generate_radial_point2(p,separation);
+            pk = pois__generate_radial_point2(p,separation);
             
-            if( drn__check_bounds_plane(pk,space_size) &&
-                drn__check_bg_grid2(pk,data,bg_grid,grid_dim,unit_sz,separation) )
+            if( pois__check_bounds_plane(pk,space_size) &&
+                pois__check_bg_grid2(pk,data,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 data[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
@@ -866,7 +866,7 @@ void drn_poisson_plane_in_place(    POIS_POINT2 * data,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == DRN_k )
+            else if( c == POIS_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
@@ -881,7 +881,7 @@ void drn_poisson_plane_in_place(    POIS_POINT2 * data,
     *num_samples = num_points;
 }
 
-POIS_POINT2 * drn_poisson_disk(     int * num_samples,
+POIS_POINT2 * poisson_disk(     int * num_samples,
                                     int space_radius,
                                     float separation            )
 {
@@ -894,7 +894,7 @@ POIS_POINT2 * drn_poisson_disk(     int * num_samples,
     int active_ind;
     
     // find unit size of a cell
-    float unit_sz = separation * DRN_PI_quarter_sine;
+    float unit_sz = separation * POIS_PI_quarter_sine;
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT2 p,pk;
     
@@ -910,9 +910,9 @@ POIS_POINT2 * drn_poisson_disk(     int * num_samples,
         bg_grid[i] = -1;
         
     // emit initial point
-    p = drn_generate_uniform_point2(space_size);
-    while( drn__get_dist2(&p,&cp) > space_radius )
-        p = drn_generate_uniform_point2(space_size);
+    p = generate_uniform_point2(space_size);
+    while( pois__get_dist2(&p,&cp) > space_radius )
+        p = generate_uniform_point2(space_size);
     point_list[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(floor(p.y/unit_sz)*grid_dim+floor(p.x/unit_sz));
@@ -929,10 +929,10 @@ POIS_POINT2 * drn_poisson_disk(     int * num_samples,
         while(1)
         {
             c += 1;
-            pk = drn__generate_radial_point2(p,separation);
+            pk = pois__generate_radial_point2(p,separation);
             
-            if( ( drn__get_dist2(&pk,&cp) < space_radius ) &&
-                drn__check_bg_grid2(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
+            if( ( pois__get_dist2(&pk,&cp) < space_radius ) &&
+                pois__check_bg_grid2(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 point_list[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
@@ -941,7 +941,7 @@ POIS_POINT2 * drn_poisson_disk(     int * num_samples,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == DRN_k )
+            else if( c == POIS_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
@@ -965,7 +965,7 @@ POIS_POINT2 * drn_poisson_disk(     int * num_samples,
     return point_list;
 }
 
-void drn_poisson_disk_in_place( POIS_POINT2 * data,
+void poisson_disk_in_place( POIS_POINT2 * data,
                                 int * num_samples,
                                 int space_radius,
                                 float separation            )
@@ -981,7 +981,7 @@ void drn_poisson_disk_in_place( POIS_POINT2 * data,
     int active_ind;
     
     // find unit size of a cell
-    float unit_sz = separation * DRN_PI_quarter_sine;
+    float unit_sz = separation * POIS_PI_quarter_sine;
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT2 p,pk;
     
@@ -996,9 +996,9 @@ void drn_poisson_disk_in_place( POIS_POINT2 * data,
         bg_grid[i] = -1;
         
     // emit initial point
-    p = drn_generate_uniform_point2(space_size);
-    while( drn__get_dist2(&p,&cp) > space_radius )
-        p = drn_generate_uniform_point2(space_size);
+    p = generate_uniform_point2(space_size);
+    while( pois__get_dist2(&p,&cp) > space_radius )
+        p = generate_uniform_point2(space_size);
     data[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(floor(p.y/unit_sz)*grid_dim+floor(p.x/unit_sz));
@@ -1015,10 +1015,10 @@ void drn_poisson_disk_in_place( POIS_POINT2 * data,
         while(1)
         {
             c += 1;
-            pk = drn__generate_radial_point2(p,separation);
+            pk = pois__generate_radial_point2(p,separation);
             
-            if( ( drn__get_dist2(&pk,&cp) < space_radius ) &&
-                drn__check_bg_grid2(pk,data,bg_grid,grid_dim,unit_sz,separation) )
+            if( ( pois__get_dist2(&pk,&cp) < space_radius ) &&
+                pois__check_bg_grid2(pk,data,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 data[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
@@ -1027,7 +1027,7 @@ void drn_poisson_disk_in_place( POIS_POINT2 * data,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == DRN_k )
+            else if( c == POIS_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
@@ -1050,7 +1050,7 @@ void drn_poisson_disk_in_place( POIS_POINT2 * data,
 }
 
 
-POIS_POINT3 * drn_poisson_sphere(   int * num_samples,
+POIS_POINT3 * poisson_sphere(   int * num_samples,
                                     int space_radius,
                                     float separation            )
 {
@@ -1064,7 +1064,7 @@ POIS_POINT3 * drn_poisson_sphere(   int * num_samples,
     int active_ind;
     
     // find unit size of a cell
-    float unit_sz = separation * DRN_PI_quarter_sine;
+    float unit_sz = separation * POIS_PI_quarter_sine;
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT3 p,pk;
     
@@ -1080,9 +1080,9 @@ POIS_POINT3 * drn_poisson_sphere(   int * num_samples,
         bg_grid[i] = -1;
         
     // emit initial point
-    p = drn_generate_uniform_point3(space_size);
-    while( drn__get_dist3(&p,&cp) > space_radius )
-        p = drn_generate_uniform_point3(space_size);
+    p = generate_uniform_point3(space_size);
+    while( pois__get_dist3(&p,&cp) > space_radius )
+        p = generate_uniform_point3(space_size);
     point_list[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(    floor(p.z/unit_sz)*grid_dim*grid_dim +
@@ -1101,10 +1101,10 @@ POIS_POINT3 * drn_poisson_sphere(   int * num_samples,
         while(1)
         {
             c += 1;
-            pk = drn__generate_radial_point3(p,separation);
+            pk = pois__generate_radial_point3(p,separation);
             
-            if( ( drn__get_dist3(&pk,&cp) < space_radius ) &&
-                drn__check_bg_grid3(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
+            if( ( pois__get_dist3(&pk,&cp) < space_radius ) &&
+                pois__check_bg_grid3(pk,point_list,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 point_list[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
@@ -1115,7 +1115,7 @@ POIS_POINT3 * drn_poisson_sphere(   int * num_samples,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == DRN_k )
+            else if( c == POIS_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
@@ -1140,7 +1140,7 @@ POIS_POINT3 * drn_poisson_sphere(   int * num_samples,
     return point_list;    
 }
 
-void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
+void poisson_sphere_in_place(   POIS_POINT3 * data,
                                     int * num_samples,
                                     int space_radius,
                                     float separation            )
@@ -1157,7 +1157,7 @@ void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
     int active_ind;
     
     // find unit size of a cell
-    float unit_sz = separation * DRN_PI_quarter_sine;
+    float unit_sz = separation * POIS_PI_quarter_sine;
     int grid_dim = (int)ceil((float)space_size/unit_sz);
     POIS_POINT3 p,pk;
     
@@ -1172,9 +1172,9 @@ void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
         bg_grid[i] = -1;
         
     // emit initial point
-    p = drn_generate_uniform_point3(space_size);
-    while( drn__get_dist3(&p,&cp) > space_radius )
-        p = drn_generate_uniform_point3(space_size);
+    p = generate_uniform_point3(space_size);
+    while( pois__get_dist3(&p,&cp) > space_radius )
+        p = generate_uniform_point3(space_size);
     data[num_points++] = p;
     active_list[num_active++] = num_points-1;
     int tmp = (int)(    floor(p.z/unit_sz)*grid_dim*grid_dim +
@@ -1193,10 +1193,10 @@ void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
         while(1)
         {
             c += 1;
-            pk = drn__generate_radial_point3(p,separation);
+            pk = pois__generate_radial_point3(p,separation);
             
-            if( ( drn__get_dist3(&pk,&cp) < space_radius ) &&
-                drn__check_bg_grid3(pk,data,bg_grid,grid_dim,unit_sz,separation) )
+            if( ( pois__get_dist3(&pk,&cp) < space_radius ) &&
+                pois__check_bg_grid3(pk,data,bg_grid,grid_dim,unit_sz,separation) )
             {   // emit this point and add to active list
                 data[num_points++] = pk;
                 active_list[num_active++] = num_points-1;
@@ -1207,7 +1207,7 @@ void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
                 bg_grid[tmp] = num_points-1;
                 break;
             }
-            else if( c == DRN_k )
+            else if( c == POIS_k )
             {   // remove p from active list
                 active_list[active_ind] = active_list[--num_active];
                 break;
@@ -1234,4 +1234,4 @@ void drn_poisson_sphere_in_place(   POIS_POINT3 * data,
 
 #pragma GCC diagnostic pop
 
-#endif /* DRN_POIS_IMPLEMENTATION */
+#endif /* POIS_IMPLEMENTATION */

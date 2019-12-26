@@ -1,5 +1,5 @@
 /*
- * drn_mml.h
+ * mml.h
  * 
  * A basic parser/decoder for MML (Music Macro Language) format music files
  * -    currently works on basic samples but not full featured or thoroughly
@@ -20,8 +20,8 @@
 //   See end of file
 */
 
-#ifndef __INCLUDED__DRN_MML_H__
-#define __INCLUDED__DRN_MML_H__
+#ifndef __INCLUDED__MML_H__
+#define __INCLUDED__MML_H__
 
 
 #ifdef __cplusplus
@@ -61,14 +61,14 @@ typedef struct {
 typedef struct {
     mml_decode_state_t decode_state;
     mml_data_t data;
-} drn_mml_t;
+} mml_t;
 
 /* function prototypes */
-drn_mml_t* drn_mml_open_file(const char*);
-drn_mml_t* drn_mml_open_mem(const char*,unsigned int);
-void drn_mml_free(drn_mml_t*);
-void drn_mml_reset_decode_state(drn_mml_t*);
-double drn_mml_decode_stream(drn_mml_t* m,double dt);
+mml_t* mml_open_file(const char*);
+mml_t* mml_open_mem(const char*,unsigned int);
+void mml_free(mml_t*);
+void mml_reset_decode_state(mml_t*);
+double mml_decode_stream(mml_t* m,double dt);
 
 
 #ifdef __cplusplus
@@ -76,7 +76,7 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt);
 #endif
 
 
-#endif /* __INCLUDED__DRN_MML_H__ */
+#endif /* __INCLUDED__MML_H__ */
 
 /* ////////////////////////////////////////////////////////////////////
  * 
@@ -87,7 +87,7 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt);
                 * 
                 * 
 //////////////////////////////////////////////////////////////////// */
-#ifdef DRN_MML_IMPLEMENTATION
+#ifdef MML_IMPLEMENTATION
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
@@ -310,18 +310,18 @@ static double mml_quant_values[9] =
 
 #define NULLCHAR                '\0'
 #define BITS_PER_NOTE           15.0
-#define DRN_GET_DECIMAL(f)      (f-floor(f))
-#define DRN_PI                  3.14159265359
-#define DRN_PI_twice            DRN_PI*2.0
-#define DRN_PI_inv              0.31831
-#define DRN_PI_inv_twice        0.15915
-#define DRN_SQUARE(x)           (sin(x) > 0 ? 1.0 : -1.0)
-#define DRN_SAMPLE_WAVETABLE(t,voice,note) \
-        mml_wavetable[voice][(int)(roundf(BITS_PER_NOTE*DRN_GET_DECIMAL(note*t)))]
-#define DRN_NOTE_LOOKUP(t,voice,note) \
-        (((double)(DRN_SAMPLE_WAVETABLE(t,voice,note)) \
+#define GET_DECIMAL(f)      (f-floor(f))
+#define PI                  3.14159265359
+#define PI_twice            PI*2.0
+#define PI_inv              0.31831
+#define PI_inv_twice        0.15915
+#define SQUARE(x)           (sin(x) > 0 ? 1.0 : -1.0)
+#define SAMPLE_WAVETABLE(t,voice,note) \
+        mml_wavetable[voice][(int)(roundf(BITS_PER_NOTE*GET_DECIMAL(note*t)))]
+#define NOTE_LOOKUP(t,voice,note) \
+        (((double)(SAMPLE_WAVETABLE(t,voice,note)) \
         / BITS_PER_NOTE ) * 2.0 - 1.0 ) * 0.90
-#define DRN_ONE_NOTE(t,note)    ( 0.99999*DRN_SQUARE(note*DRN_PI_twice*t) )
+#define ONE_NOTE(t,note)    ( 0.99999*SQUARE(note*PI_twice*t) )
 
 static const char* mml_buf = NULL;
 static unsigned int mml_index = 0;
@@ -563,7 +563,7 @@ const char* mml__read_file(const char* fn,unsigned int* sz)
     return (const char*)string;
 }
 
-void drn_mml_reset_decode_state(drn_mml_t* m)
+void mml_reset_decode_state(mml_t* m)
 {
    int i,j;
    for( i=0; i<m->data.track_count; i++ )
@@ -582,7 +582,7 @@ void drn_mml_reset_decode_state(drn_mml_t* m)
     
 }
 
-double drn_mml_decode_stream(drn_mml_t* m,double dt)
+double mml_decode_stream(mml_t* m,double dt)
 {
     int i,j;
     double r,v,vn,c;
@@ -595,7 +595,7 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt)
     if( m->decode_state.accum_time > m->data.length )
     {
         dt = m->decode_state.accum_time - m->data.length;
-        drn_mml_reset_decode_state(m);
+        mml_reset_decode_state(m);
         m->decode_state.accum_time += dt;
     }
     
@@ -622,7 +622,7 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt)
         if( n->frequency )
         {
            vn = n->volume;
-           c = DRN_NOTE_LOOKUP(m->decode_state.accum_time,m->data.waves[i],n->frequency);
+           c = NOTE_LOOKUP(m->decode_state.accum_time,m->data.waves[i],n->frequency);
             
            r += (v*vn*c);
         }
@@ -634,7 +634,7 @@ double drn_mml_decode_stream(drn_mml_t* m,double dt)
 
 
 
-void drn_mml_free(drn_mml_t* m)
+void mml_free(mml_t* m)
 {
     int i;
     for( i=0; i<m->data.track_count; i++ )
@@ -647,7 +647,7 @@ void drn_mml_free(drn_mml_t* m)
 
 
 
-drn_mml_t* drn_mml_open_file(const char* filename)
+mml_t* mml_open_file(const char* filename)
 {
     if( mml_buf )
         free((void*)mml_buf);
@@ -655,12 +655,12 @@ drn_mml_t* drn_mml_open_file(const char* filename)
     unsigned int sz;
     mml_buf = mml__read_file(filename,&sz);
     
-    drn_mml_t* song = drn_mml_open_mem(mml_buf,sz);
+    mml_t* song = mml_open_mem(mml_buf,sz);
     
     return song;
 }
 
-drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
+mml_t* mml_open_mem(const char* buf,unsigned int sz)
 {
     int c;
     double rest_len;
@@ -671,7 +671,7 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
     //~ mml_length_counter = 0;
     mml_sequence_counter = 0;
     
-    drn_mml_t* song = (drn_mml_t*)malloc(sizeof(drn_mml_t));
+    mml_t* song = (mml_t*)malloc(sizeof(mml_t));
     song->data.beats_per_minute = 140;
     song->data.length = 0.0;
     song->data.tracks = NULL;
@@ -861,7 +861,7 @@ drn_mml_t* drn_mml_open_mem(const char* buf,unsigned int sz)
 
 #pragma GCC diagnostic pop
 
-#endif /* DRN_MML_IMPLEMENTATION */
+#endif /* MML_IMPLEMENTATION */
 
 /*
 ------------------------------------------------------------------------------
