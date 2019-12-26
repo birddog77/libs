@@ -4,7 +4,7 @@ single-file public domain libraries in c/c++
 Library                               | Description
 --------------------------------------| -----------
 [misc.h]              | some misc math and file functions
-[mml.h]               | MML (Music Macro Language) parser and decoder
+[mml.h]               | MML(Music Macro Language)-like parser and decoder
 [pois.h]              | generates Poisson-ish random data
 
 
