@@ -1,0 +1,17 @@
+w2
+l4 o2 q8 v4
+w2
+l4 o3 q5
+w6
+l4 o3 q2 v5
+w7
+l4 o3 q4 v6
+
+;  // end instrument definitions
+
+
+// play some notes
+r1; c a d e; r1; c1;
+e3/1; a-3 f3 d2/3 ; r1; c1;
+; d3 f3; r1; c1;
+; d3 f3 a3; r1; c1;
