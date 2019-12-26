@@ -3,9 +3,9 @@ single-file public domain libraries in c/c++
 
 Library                               | Description
 --------------------------------------| -----------
-[misc]  (misc.h)              | some misc math and file functions
-[mml]   (mml.h)               | MML (Music Macro Language) parser and decoder
-[pois]  (pois.h)              | generates Poisson-ish random data
+[misc.h]              | some misc math and file functions
+[mml.h]               | MML (Music Macro Language) parser and decoder
+[pois.h]              | generates Poisson-ish random data
 
 
 # Notes
