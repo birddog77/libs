@@ -614,8 +614,6 @@ double mml_decode_stream(mml_t* m,double dt)
         mml_reset_decode_state(m);
         m->decode_state.accum_time += dt;
     }
-    
-    double tph = 1.0 / m->data.track_count;
         
     for( i=0; i<m->data.track_count; ++i )
     {
@@ -639,8 +637,7 @@ double mml_decode_stream(mml_t* m,double dt)
         if( n->frequency )
         {
            vn = n->volume;
-           c = NOTE_LOOKUP(m->decode_state.accum_time
-                           + i*tph,m->data.waves[i],n->frequency);
+           c = NOTE_LOOKUP(m->decode_state.accum_time,m->data.waves[i],n->frequency);
             
            r += (v*vn*c);
         }
